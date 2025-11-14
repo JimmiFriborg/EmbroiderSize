@@ -21,13 +21,20 @@ Embroidery files like PES and DST store actual stitch coordinates rather than ve
 
 EmbroiderSize provides:
 
-- **Modern GUI interface** - Easy-to-use graphical interface for non-technical users
-- **Intelligent validation** - Warns you about unsafe resize operations before you waste time and materials
-- **Two resize modes** - Simple (fast) and Smart (quality-preserving)
-- **Format support** - Reads 40+ formats, writes 20+ formats via PyEmbroidery
-- **User-friendly CLI** - Beautiful terminal interface with clear feedback
-- **Quality metrics** - Shows stitch density, dimensions, and counts before/after
-- **Portable executable** - Build standalone apps for Windows, Mac, and Linux
+- **🎨 Modern GUI interface** - Easy-to-use graphical interface with smart defaults and helpful guidance
+- **✅ Intelligent validation** - Clear quality assessment before you waste time and materials
+- **⚡ Two resize modes** - Simple (fast) and Smart (quality-preserving)
+- **📁 Format support** - Reads 40+ formats, writes 20+ formats via PyEmbroidery
+- **💻 User-friendly CLI** - Beautiful terminal interface with clear feedback
+- **📊 Quality metrics** - Shows stitch density, dimensions, and counts before/after
+- **📦 Portable executable** - Build standalone apps for Windows, Mac, and Linux
+
+**Latest Improvements (v2.0):**
+- 🎯 **Smart Defaults**: Automatically sets 150% scale for immediate testing
+- 🔒 **Better UX**: Buttons disabled until file is loaded, preventing confusion
+- 📋 **Enhanced Validation**: Clear quality assessment with color-coded warnings
+- 💬 **Helpful Messages**: Status bar guides you through each step
+- 🎨 **Improved Display**: Better formatted validation results and pattern info
 
 ## Features
 
@@ -109,31 +116,44 @@ python -m src.gui
    - Click "Browse File" button
    - Select your embroidery file (.pes, .dst, .jef, etc.)
    - Pattern information will display automatically
+   - The resize/preview buttons will become active
 
 2. **Choose Resize Method**
-   - **Scale** - Resize by percentage (e.g., 150% = 1.5x larger)
-   - **Width** - Set target width (maintains aspect ratio)
-   - **Height** - Set target height (maintains aspect ratio)
+   - **Scale** - Resize by percentage (default: 150% = 1.5x larger)
+   - **Width** - Set target width in mm (maintains aspect ratio)
+   - **Height** - Set target height in mm (maintains aspect ratio)
    - **Both** - Set both width and height explicitly
 
-3. **Preview Changes**
-   - Click "Preview Resize" to see validation results
-   - Check for warnings about stitch density
-   - Review new dimensions before saving
+3. **Adjust Resize Parameters**
+   - Modify the scale percentage or dimensions as needed
+   - Common values: 150 for larger, 75 for smaller, 50 for half size
+   - The default 150% scale will make your design 1.5x larger
 
-4. **Resize & Save**
-   - Click "Resize & Save"
+4. **Preview Changes (Recommended)**
+   - Click "Preview Resize" to see what will happen
+   - Review the quality assessment and validation results
+   - Check for warnings about stitch density
+   - See new dimensions and scale factor
+   - **Important**: Always preview before saving!
+
+5. **Resize & Save**
+   - After reviewing the preview, click "Resize & Save"
    - Choose output location and format
+   - The validation results will confirm success
    - Done! Your resized file is ready to use
 
 ### GUI Features
 
-- **Drag & Drop** - Drag embroidery files directly into the window (coming soon)
-- **Real-time Validation** - See warnings about extreme resizes
-- **Pattern Info** - View dimensions, stitch count, colors, and density
+- **Smart Defaults** - Automatically sets 150% scale when file is loaded for immediate testing
+- **Interactive Buttons** - Preview and Resize buttons are disabled until a file is loaded
+- **Enhanced Validation Display** - Clear quality assessment with color-coded warnings
+- **Real-time Validation** - See warnings about extreme resizes before saving
+- **Pattern Info** - View dimensions, stitch count, colors, and density instantly
 - **Multiple Formats** - Open and save in 40+ embroidery formats
 - **Progress Feedback** - Visual progress indicators during processing
+- **Helpful Status Messages** - Clear guidance on what to do next
 - **Keyboard Shortcuts** - `Ctrl+O` to open files, `Ctrl+Q` to quit
+- **Two Resize Modes** - Choose between Simple (fast) and Smart (quality-preserving)
 
 ## Using the CLI (Command Line)
 
@@ -376,21 +396,41 @@ python -m src.cli info output.pes  # Verify it fits
 
 ## Troubleshooting
 
-### "No stitches found in pattern"
+### GUI Issues
 
-The file may be corrupted or empty. Try opening it in embroidery software to verify.
+**"Nothing happens when I load a file"**
+- Make sure the file is a valid embroidery file (.pes, .dst, .jef, etc.)
+- Check that the Pattern Information panel updates with file details
+- The Preview and Resize & Save buttons should become active (no longer grayed out)
+- If buttons remain disabled, try restarting the application
 
-### "Resize validation failed"
+**"Preview shows no change"**
+- Make sure you've changed the scale percentage from 100%
+- By default, the GUI sets scale to 150% when you load a file
+- Try different values: 150 for larger, 75 for smaller, 50 for half size
 
-The resize percentage is too extreme. Consider:
-- Reducing the resize amount
-- Using `--force` if you understand the risks
-- Re-digitizing the design at the target size
+**"Can't run the GUI / Import errors"**
+- Make sure all dependencies are installed: `pip install -r requirements.txt`
+- On Linux, you may need to install tkinter: `sudo apt-get install python3-tk`
+- Check that Python 3.8 or higher is installed
 
-### Output file has quality issues
+### CLI Issues
 
-- Keep resizes within ±20%
+**"No stitches found in pattern"**
+- The file may be corrupted or empty
+- Try opening it in embroidery software to verify
+- Ensure the file has the correct extension
+
+**"Resize validation failed"**
+- The resize percentage is too extreme
+- Consider reducing the resize amount
+- Use `--force` if you understand the risks
+- Consider professional re-digitizing for drastic size changes
+
+**Output file has quality issues**
+- Keep resizes within ±20% for best results
 - Check stitch density with `info` command
+- Preview before saving to see validation warnings
 - Consider professional re-digitizing for drastic size changes
 
 ## Technical Details
