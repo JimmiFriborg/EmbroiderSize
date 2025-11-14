@@ -21,14 +21,17 @@ Embroidery files like PES and DST store actual stitch coordinates rather than ve
 
 EmbroiderSize provides:
 
+- **Modern GUI interface** - Easy-to-use graphical interface for non-technical users
 - **Intelligent validation** - Warns you about unsafe resize operations before you waste time and materials
 - **Two resize modes** - Simple (fast) and Smart (quality-preserving)
 - **Format support** - Reads 40+ formats, writes 20+ formats via PyEmbroidery
 - **User-friendly CLI** - Beautiful terminal interface with clear feedback
 - **Quality metrics** - Shows stitch density, dimensions, and counts before/after
+- **Portable executable** - Build standalone apps for Windows, Mac, and Linux
 
 ## Features
 
+- 🖥️ **Modern GUI** - User-friendly graphical interface (NEW!)
 - 📏 **Resize by width, height, or percentage**
 - 🎯 **Smart validation** with safety warnings
 - 🔍 **Preview mode** to see results before saving
@@ -36,6 +39,7 @@ EmbroiderSize provides:
 - 🔄 **Format conversion** between embroidery file types
 - ⚡ **Fast and efficient** processing
 - 🎨 **Beautiful terminal UI** with color-coded feedback
+- 📦 **Portable executable** - Build standalone apps for distribution
 
 ## Supported Formats
 
@@ -71,6 +75,69 @@ pip install -e .
 ```
 
 ## Quick Start
+
+EmbroiderSize can be used in two ways: **GUI (Graphical Interface)** or **CLI (Command Line)**.
+
+## Using the GUI (Recommended for Most Users)
+
+The GUI provides a simple, intuitive interface for resizing embroidery files without using the command line.
+
+### Launching the GUI
+
+**Option 1: Direct Launch (Simplest)**
+```bash
+python EmbroiderSize.py
+```
+
+**Option 2: After Installation**
+```bash
+# If you installed with pip
+embroider-size-gui
+
+# Or using Python module
+python -m src.gui
+```
+
+**Option 3: Double-Click (After Building Executable)**
+- Build the standalone executable (see Building Standalone Executable section)
+- Double-click `EmbroiderSize.exe` (Windows) or `EmbroiderSize.app` (Mac)
+- No Python installation required!
+
+### Using the GUI
+
+1. **Load a File**
+   - Click "Browse File" button
+   - Select your embroidery file (.pes, .dst, .jef, etc.)
+   - Pattern information will display automatically
+
+2. **Choose Resize Method**
+   - **Scale** - Resize by percentage (e.g., 150% = 1.5x larger)
+   - **Width** - Set target width (maintains aspect ratio)
+   - **Height** - Set target height (maintains aspect ratio)
+   - **Both** - Set both width and height explicitly
+
+3. **Preview Changes**
+   - Click "Preview Resize" to see validation results
+   - Check for warnings about stitch density
+   - Review new dimensions before saving
+
+4. **Resize & Save**
+   - Click "Resize & Save"
+   - Choose output location and format
+   - Done! Your resized file is ready to use
+
+### GUI Features
+
+- **Drag & Drop** - Drag embroidery files directly into the window (coming soon)
+- **Real-time Validation** - See warnings about extreme resizes
+- **Pattern Info** - View dimensions, stitch count, colors, and density
+- **Multiple Formats** - Open and save in 40+ embroidery formats
+- **Progress Feedback** - Visual progress indicators during processing
+- **Keyboard Shortcuts** - `Ctrl+O` to open files, `Ctrl+Q` to quit
+
+## Using the CLI (Command Line)
+
+For automation, scripting, or batch processing, use the command-line interface.
 
 ### Display Pattern Information
 
@@ -227,6 +294,53 @@ python -m src.cli convert [OPTIONS] <input_file> <output_file>
 - Getting validation feedback
 - Future enhancement
 
+## Building Standalone Executable
+
+You can build a standalone executable that runs without Python installed. This is perfect for distributing to users who don't have Python.
+
+### Quick Build
+
+```bash
+# Install PyInstaller (if not already installed)
+pip install pyinstaller
+
+# Run the build script
+python build_executable.py
+```
+
+The build script will:
+1. Check and install required dependencies
+2. Clean previous builds
+3. Build the executable using PyInstaller
+4. Create a distributable folder in `dist/`
+
+### Manual Build
+
+```bash
+# Install PyInstaller
+pip install pyinstaller
+
+# Build using the spec file
+pyinstaller --clean EmbroiderSize.spec
+```
+
+### Distribution
+
+After building, you'll find:
+- **Windows:** `dist/EmbroiderSize/EmbroiderSize.exe`
+- **macOS:** `dist/EmbroiderSize.app`
+- **Linux:** `dist/EmbroiderSize/EmbroiderSize`
+
+Simply distribute the entire `dist/EmbroiderSize` folder (or the `.app` on macOS) to users.
+
+### Requirements for Building
+
+- Python 3.8+
+- PyInstaller
+- All EmbroiderSize dependencies
+
+**Note:** Build on the target platform (build on Windows for Windows, macOS for macOS, etc.)
+
 ## Brother PP1 / Skitch Connectivity
 
 The Brother PP1 (Skitch) embroidery machine uses Bluetooth connectivity through the Artspira mobile app rather than direct USB connection.
@@ -285,23 +399,29 @@ The resize percentage is too extreme. Consider:
 
 EmbroiderSize is built with:
 - **PyEmbroidery** - Core embroidery file manipulation
+- **CustomTkinter** - Modern GUI framework (NEW!)
 - **Click** - User-friendly CLI framework
 - **Rich** - Beautiful terminal output
+- **Pillow** - Image processing support
 
 ### Project Structure
 
 ```
 EmbroiderSize/
 ├── src/
-│   ├── cli.py           # Command-line interface
-│   ├── resizer.py       # Core resizing logic
-│   ├── validator.py     # Safety validation
-│   └── utils.py         # Helper functions
+│   ├── cli.py                # Command-line interface
+│   ├── gui.py                # Graphical user interface (NEW!)
+│   ├── resizer.py            # Core resizing logic
+│   ├── validator.py          # Safety validation
+│   └── utils.py              # Helper functions
 ├── tests/
-│   └── test_resizer.py  # Unit tests
-├── requirements.txt     # Python dependencies
-├── setup.py             # Package configuration
-└── README.md           # This file
+│   └── test_resizer.py       # Unit tests
+├── EmbroiderSize.py          # GUI launcher script (NEW!)
+├── EmbroiderSize.spec        # PyInstaller spec file (NEW!)
+├── build_executable.py       # Executable build script (NEW!)
+├── requirements.txt          # Python dependencies
+├── setup.py                  # Package configuration
+└── README.md                 # This file
 ```
 
 ### Measurement Units
@@ -314,10 +434,12 @@ EmbroiderSize/
 
 Contributions are welcome! Areas for improvement:
 
-- Enhanced smart resizing algorithm
-- Additional validation rules
+- Enhanced smart resizing algorithm with stitch interpolation
+- Additional validation rules for different fabric types
 - Support for more machine-specific requirements
-- GUI interface
+- Machine presets (Brother, Janome, Bernina, etc.)
+- Advanced drag-and-drop with tkinterdnd2
+- Stitch visualization and preview
 - Batch processing improvements
 
 ## License
@@ -338,13 +460,14 @@ For issues, questions, or suggestions:
 
 ## Roadmap
 
+- [x] **GUI interface** - ✅ COMPLETED!
 - [ ] Full smart resize implementation with stitch density adjustment
-- [ ] GUI interface
-- [ ] Batch processing for multiple files
 - [ ] Machine-specific presets (Brother, Janome, etc.)
 - [ ] Advanced validation rules
 - [ ] Stitch visualization
 - [ ] Automatic format detection and conversion
+- [ ] Batch processing for multiple files
+- [ ] Enhanced drag-and-drop support with tkinterdnd2
 
 ---
 
