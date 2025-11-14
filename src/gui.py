@@ -147,10 +147,10 @@ class EmbroiderSizeGUI(ctk.CTk):
         )
         self.scale_entry = ctk.CTkEntry(
             self.resize_frame,
-            placeholder_text="100",
+            placeholder_text="e.g., 150 for 1.5x larger, 50 for half size",
             width=100,
         )
-        self.scale_entry.insert(0, "100")
+        # Will be set to 150 when file is loaded
 
         # Width input
         self.width_label = ctk.CTkLabel(
@@ -205,6 +205,7 @@ class EmbroiderSizeGUI(ctk.CTk):
             width=150,
             height=40,
             font=ctk.CTkFont(size=14),
+            state="disabled",  # Initially disabled until file is loaded
         )
 
         self.resize_btn = ctk.CTkButton(
@@ -216,6 +217,7 @@ class EmbroiderSizeGUI(ctk.CTk):
             font=ctk.CTkFont(size=14, weight="bold"),
             fg_color="green",
             hover_color="darkgreen",
+            state="disabled",  # Initially disabled until file is loaded
         )
 
         # ===== Progress bar =====
@@ -377,8 +379,16 @@ class EmbroiderSizeGUI(ctk.CTk):
         """Handle successful file load."""
         self.file_path_var.set(self.current_file)
         self._update_pattern_info()
-        self._set_status("File loaded successfully", processing=False)
+        self._set_status("File loaded. Choose resize settings and click Preview or Resize & Save", processing=False)
         self._clear_validation()
+
+        # Set a helpful default scale (150% = 1.5x larger)
+        self.scale_entry.delete(0, "end")
+        self.scale_entry.insert(0, "150")
+
+        # Enable action buttons now that file is loaded
+        self.preview_btn.configure(state="normal")
+        self.resize_btn.configure(state="normal")
 
     def _update_pattern_info(self):
         """Update the pattern information display."""
@@ -581,24 +591,42 @@ Stitch Density: {info['stitch_density_mm']:.3f}mm
         validation_results = results.get("validation_results", [])
 
         output = []
+        output.append("RESIZE PREVIEW")
+        output.append("=" * 50)
         output.append(f"New size: {format_size(results['new_width'])} × {format_size(results['new_height'])}")
         output.append(f"Scale factor: {results['scale_factor'] * 100:.1f}%")
 
         if results.get("new_density"):
-            output.append(f"New density: {results['new_density']:.3f}mm")
+            output.append(f"New stitch density: {results['new_density']:.3f}mm")
 
-        output.append("\n" + "=" * 50 + "\n")
+        if results.get("original_density"):
+            output.append(f"Original density: {results.get('original_density', 0):.3f}mm")
+
+        output.append("\n" + "QUALITY ASSESSMENT")
+        output.append("=" * 50)
 
         if validation_results:
+            has_critical = any(vr.level == ValidationLevel.CRITICAL for vr in validation_results)
+            has_danger = any(vr.level == ValidationLevel.DANGER for vr in validation_results)
+
             for vr in validation_results:
                 icon = self._get_validation_icon(vr.level)
                 output.append(f"{icon} {vr.message}")
+
+            if has_critical:
+                output.append("\n⛔ CRITICAL: This resize is not recommended!")
+            elif has_danger:
+                output.append("\n⚠️  WARNING: Proceed with caution!")
+            else:
+                output.append("\n✅ This resize should produce acceptable results.")
         else:
-            output.append("✓ No validation issues")
+            output.append("✅ No validation issues detected!")
+            output.append("This resize is within safe parameters.")
 
         if results.get("note"):
-            output.append("\n" + "=" * 50)
-            output.append(f"Note: {results['note']}")
+            output.append("\n" + "NOTE")
+            output.append("=" * 50)
+            output.append(results['note'])
 
         self.validation_text.configure(state="normal")
         self.validation_text.delete("1.0", "end")
@@ -620,7 +648,7 @@ Stitch Density: {info['stitch_density_mm']:.3f}mm
         """Clear validation display."""
         self.validation_text.configure(state="normal")
         self.validation_text.delete("1.0", "end")
-        self.validation_text.insert("1.0", "No validation results yet")
+        self.validation_text.insert("1.0", "Load a file and click 'Preview Resize' to see validation results.\n\nThe preview will show:\n• New dimensions\n• Scale factor\n• Stitch density warnings\n• Quality recommendations")
         self.validation_text.configure(state="disabled")
 
     def _set_status(self, message: str, processing: bool = False):
