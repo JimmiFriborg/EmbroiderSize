@@ -33,5 +33,8 @@ setup(
         "console_scripts": [
             "embroider-resize=src.cli:cli",
         ],
+        "gui_scripts": [
+            "embroider-size-gui=src.gui:main",
+        ],
     },
 )
