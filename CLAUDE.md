@@ -2,7 +2,7 @@
 
 **Last Updated:** 2025-11-14
 **Repository:** JimmiFriborg/EmbroiderSize
-**Status:** Early Development / Initial Setup
+**Status:** Alpha - Core Functionality Implemented
 
 ## 📋 Table of Contents
 
@@ -21,16 +21,24 @@
 ## Project Overview
 
 ### Purpose
-EmbroiderSize is a project focused on embroidery sizing and manipulation. The exact scope and functionality are still being defined.
+EmbroiderSize is a Python-based command-line tool for intelligently resizing embroidery stitch files (.pes, .dst, .jef, and 40+ other formats) without compromising quality. Unlike simple image resizing, embroidery files require careful manipulation to maintain proper stitch density and prevent quality issues.
 
 ### Current State
-- **Phase:** Initial repository setup
-- **Last Commit:** 620b68d (Initial commit)
-- **Files:** README.md only
-- **Language/Framework:** To be determined
+- **Phase:** Alpha - Core functionality implemented
+- **Language:** Python 3.8+
+- **Primary Features:**
+  - Resize embroidery files by width, height, or percentage
+  - Intelligent validation with safety warnings
+  - Format conversion between 40+ embroidery formats
+  - Preview mode for checking results before saving
+  - Beautiful CLI with detailed pattern information
 
 ### Technology Stack
-*To be documented as the project develops*
+- **Core Library:** PyEmbroidery (embroidery file reading/writing)
+- **CLI Framework:** Click (command-line interface)
+- **UI Library:** Rich (terminal formatting and tables)
+- **Testing:** pytest (unit testing framework)
+- **Package Management:** pip, setuptools
 
 ---
 
@@ -38,26 +46,22 @@ EmbroiderSize is a project focused on embroidery sizing and manipulation. The ex
 
 ```
 EmbroiderSize/
-├── .git/              # Git version control
-├── README.md          # Project README
-└── CLAUDE.md          # This file - AI assistant guide
-```
-
-### Expected Future Structure
-As the project develops, the structure may include:
-
-```
-EmbroiderSize/
-├── src/               # Source code
-├── tests/             # Test files
-├── docs/              # Documentation
-├── examples/          # Usage examples
-├── requirements.txt   # Python dependencies (if Python-based)
-├── package.json       # Node dependencies (if JavaScript-based)
-├── .gitignore         # Git ignore rules
-├── LICENSE            # Project license
-├── README.md          # Project README
-└── CLAUDE.md          # This file
+├── src/                    # Source code
+│   ├── __init__.py         # Package initialization
+│   ├── cli.py              # Command-line interface (Click)
+│   ├── resizer.py          # Core resizing logic
+│   ├── validator.py        # Safety validation and checks
+│   └── utils.py            # Helper functions (dimensions, density, etc.)
+├── tests/                  # Test files
+│   ├── __init__.py
+│   └── test_resizer.py     # Unit tests for resizer module
+├── examples/               # Usage examples (future: sample files)
+├── .git/                   # Git version control
+├── .gitignore              # Git ignore rules
+├── requirements.txt        # Python dependencies
+├── setup.py                # Package configuration
+├── README.md               # Project documentation
+└── CLAUDE.md               # This file - AI assistant guide
 ```
 
 ---
@@ -117,7 +121,15 @@ EmbroiderSize/
 5. **Security:** Never commit secrets, API keys, or credentials
 
 ### Code Style
-*To be defined based on chosen language/framework*
+
+**Python (PEP 8):**
+- Use 4 spaces for indentation (no tabs)
+- Maximum line length: 100 characters (reasonable flexibility)
+- Use snake_case for functions and variables
+- Use PascalCase for class names
+- Use UPPER_CASE for constants
+- Type hints are encouraged for function signatures
+- Use double quotes for strings (consistency with existing code)
 
 ### Comments and Documentation
 
@@ -130,15 +142,35 @@ EmbroiderSize/
 
 ## Key Files and Their Purpose
 
-### Current Files
+| File | Purpose | Modify Frequency | Line Count |
+|------|---------|------------------|------------|
+| src/cli.py | Command-line interface with Click and Rich | Medium | ~300 |
+| src/resizer.py | Core embroidery resizing logic | High | ~250 |
+| src/validator.py | Safety validation and quality checks | Medium | ~180 |
+| src/utils.py | Helper functions for dimensions, density, formatting | Low | ~150 |
+| tests/test_resizer.py | Unit tests for resizer module | As features added | ~80 |
+| requirements.txt | Python dependencies | Low | ~3 |
+| setup.py | Package configuration and entry points | Low | ~40 |
+| README.md | Comprehensive user documentation | Medium | ~350 |
+| CLAUDE.md | AI assistant guide (this file) | As project evolves | ~330+ |
 
-| File | Purpose | Modify Frequency |
-|------|---------|------------------|
-| README.md | Project overview and setup instructions | Medium |
-| CLAUDE.md | AI assistant guide (this file) | As project evolves |
+### Critical Modules
 
-### Future Key Files
-*To be documented as they are added*
+**src/cli.py** - Main user interface
+- Commands: `info`, `resize`, `convert`
+- Rich terminal output with tables and colored text
+- User-friendly error messages
+
+**src/resizer.py** - Core logic
+- `EmbroideryResizer` class for pattern manipulation
+- Simple and smart resize modes
+- Pattern loading, validation, and writing
+
+**src/validator.py** - Safety system
+- `ResizeValidator` class for quality checks
+- Validates resize percentages (±20% safe limit)
+- Validates stitch density (0.4-0.45mm optimal)
+- ValidationLevel enum for severity (SAFE, WARNING, DANGER, CRITICAL)
 
 ---
 
@@ -148,24 +180,70 @@ EmbroiderSize/
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/JimmiFriborg/EmbroiderSize.git
 cd EmbroiderSize
 
-# Install dependencies (example - adjust based on actual stack)
-# For Python: pip install -r requirements.txt
-# For Node: npm install
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install package in development mode
+pip install -e .
+```
+
+### Running the Tool
+
+```bash
+# Display pattern information
+python -m src.cli info design.pes
+
+# Resize a pattern
+python -m src.cli resize input.pes output.pes --width 100
+
+# Convert between formats
+python -m src.cli convert input.pes output.dst
+
+# Preview resize without saving
+python -m src.cli resize input.pes output.pes --scale 150 --preview
 ```
 
 ### Running Tests
 
 ```bash
-# To be defined when tests are added
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/test_resizer.py
+
+# Run with verbose output
+pytest -v
+
+# Run with coverage report
+pytest --cov=src --cov-report=html
 ```
 
-### Building the Project
+### Development Workflow
 
 ```bash
-# To be defined based on project type
+# Check code before committing
+python -m src.cli info examples/sample.pes  # Test basic functionality
+
+# Run tests
+pytest
+
+# Check git status
+git status
+
+# Commit changes
+git add .
+git commit -m "Description of changes"
+
+# Push to branch
+git push -u origin branch-name
 ```
 
 ---
@@ -173,25 +251,88 @@ cd EmbroiderSize
 ## Testing Guidelines
 
 ### Test Structure
-*To be defined when testing framework is chosen*
+
+Tests are located in `tests/` directory using pytest framework.
+
+**Current Tests:**
+- `test_resizer.py` - Core resizer functionality
+  - Pattern dimension calculation
+  - Scale factor calculation
+  - Validation checks
 
 ### Test Coverage Goals
 - Aim for >80% code coverage
 - All critical paths must be tested
 - Include edge cases and error scenarios
+- Test both success and failure cases
+
+### Testing Best Practices
+
+1. **Use Test Fixtures** - Create reusable test patterns
+2. **Test Edge Cases** - Very small/large designs, extreme resize percentages
+3. **Test Error Handling** - Invalid files, missing parameters
+4. **Test Validation** - All validation levels (SAFE, WARNING, DANGER, CRITICAL)
+5. **Clean Up** - Remove temporary files after tests
 
 ### Running Tests
-*To be documented when testing is implemented*
+
+```bash
+# Install test dependencies
+pip install pytest pytest-cov
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src
+
+# Run specific test
+pytest tests/test_resizer.py::test_pattern_dimensions
+```
 
 ---
 
 ## Deployment
 
-### Deployment Process
-*To be documented when deployment pipeline is established*
+### Distribution
+
+The tool is distributed as a Python package:
+
+```bash
+# Install from source
+pip install -e .
+
+# Future: Install from PyPI (when published)
+pip install embroider-size
+```
+
+### Entry Points
+
+After installation, the tool can be run as:
+```bash
+# Via module
+python -m src.cli <command>
+
+# Future: Via console script (after pip install)
+embroider-resize <command>
+```
 
 ### Environment Variables
-*To be documented when environment configuration is needed*
+
+No environment variables required. All configuration is via command-line arguments.
+
+### Brother PP1 Integration Notes
+
+The Brother PP1 (Skitch) embroidery machine:
+- Uses **Bluetooth** connectivity (not USB)
+- Requires **Artspira mobile app** for file transfer
+- Has **100mm × 100mm (4" × 4")** working area
+- Supports **.pes format** (primary)
+
+**Workflow for PP1:**
+1. Resize file with EmbroiderSize to fit PP1 hoop (< 100mm)
+2. Transfer via Artspira app over Bluetooth
+3. Verify design fits in PP1's 4" × 4" hoop
 
 ---
 
@@ -284,17 +425,26 @@ git push -u origin <branch-name>
 
 ## Project Evolution
 
-### Next Steps
-As the project develops, update this document with:
+### Completed
+✅ Technology stack chosen (Python 3.8+, PyEmbroidery, Click, Rich)
+✅ Core resizing functionality implemented
+✅ Validation and safety checks implemented
+✅ CLI interface with beautiful terminal output
+✅ Format conversion support
+✅ Basic unit tests
+✅ Comprehensive documentation (README and CLAUDE.md)
+✅ Brother PP1 connectivity research
 
-1. **Technology stack details** once chosen
-2. **API documentation** when endpoints are created
-3. **Database schema** if database is used
-4. **Dependency management** setup
-5. **CI/CD pipeline** configuration
-6. **Deployment procedures**
-7. **Code style guides** based on chosen language
-8. **Testing frameworks** and procedures
+### Next Steps (Roadmap)
+
+1. **Enhanced Smart Resize** - Implement true density-preserving resize with stitch interpolation/reduction
+2. **GUI Interface** - Create graphical user interface for non-technical users
+3. **Batch Processing** - Process multiple files at once
+4. **Machine Presets** - Add presets for specific embroidery machines (Brother, Janome, Bernina)
+5. **Stitch Visualization** - Preview embroidery patterns visually before/after resize
+6. **CI/CD Pipeline** - Automated testing and deployment
+7. **PyPI Publication** - Publish to Python Package Index for easy installation
+8. **Advanced Validation** - More sophisticated quality checks based on stitch types
 
 ### Updating This Document
 
@@ -309,14 +459,31 @@ When significant changes occur:
 
 ## Resources
 
-### Documentation
-- [Main README](README.md)
+### Internal Documentation
+- [README.md](README.md) - Comprehensive user guide and documentation
+- [CLAUDE.md](CLAUDE.md) - This file, AI assistant guidelines
 
 ### External Resources
-*Add relevant links as the project develops:*
-- Embroidery file format specifications
-- Relevant libraries and frameworks
-- Design pattern documentation
+
+**Core Dependencies:**
+- [PyEmbroidery](https://github.com/EmbroidePy/pyembroidery) - Embroidery file reading/writing library
+- [Click](https://click.palletsprojects.com/) - Python CLI framework
+- [Rich](https://rich.readthedocs.io/) - Terminal formatting library
+
+**Embroidery File Format Specifications:**
+- [PES Format Documentation](https://edutechwiki.unige.ch/en/Embroidery_format_PES) - Technical PES format details
+- [DST Format Information](https://www.fileformat.wiki/misc/dst/) - DST format specification
+- [Embroidery Formats Overview](https://edutechwiki.unige.ch/en/Embroidery_format) - General embroidery format information
+
+**Domain Knowledge:**
+- Industry standard: ±20% safe resize limit
+- Optimal stitch density: 0.4-0.45mm between stitches
+- PyEmbroidery units: 1/10mm internally
+
+**Brother PP1 Resources:**
+- Brother Skitch PP1 (100mm × 100mm working area)
+- Artspira App (Bluetooth connectivity)
+- Supports .pes format primarily
 
 ---
 
