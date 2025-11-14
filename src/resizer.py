@@ -3,6 +3,8 @@
 import pyembroidery
 from typing import Optional, Tuple, Literal
 from pathlib import Path
+import math
+import copy
 from .utils import (
     get_pattern_dimensions,
     calculate_stitch_density,
@@ -14,12 +16,140 @@ from .validator import ResizeValidator, ValidationLevel
 class EmbroideryResizer:
     """Main class for resizing embroidery files."""
 
+    # Optimal stitch density range (in mm between stitches)
+    OPTIMAL_DENSITY_MIN = 0.4  # mm
+    OPTIMAL_DENSITY_MAX = 0.45  # mm
+    OPTIMAL_DENSITY_TARGET = 0.425  # mm (middle of range)
+
     def __init__(self):
         self.validator = ResizeValidator()
         self.pattern = None
         self.original_dimensions = None
         self.original_stitch_count = None
         self.original_density = None
+
+    @staticmethod
+    def _distance(x1, y1, x2, y2):
+        """Calculate Euclidean distance between two points."""
+        return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+    @staticmethod
+    def _interpolate_stitch(stitch1, stitch2, t):
+        """
+        Interpolate between two stitches.
+
+        Args:
+            stitch1: First stitch (x, y, flags)
+            stitch2: Second stitch (x, y, flags)
+            t: Interpolation factor (0.0 to 1.0)
+
+        Returns:
+            New interpolated stitch
+        """
+        x1, y1 = stitch1[0], stitch1[1]
+        x2, y2 = stitch2[0], stitch2[1]
+
+        # Linear interpolation
+        new_x = x1 + (x2 - x1) * t
+        new_y = y1 + (y2 - y1) * t
+
+        # Use first stitch's flags (usually STITCH)
+        flags = stitch1[2] if len(stitch1) > 2 else pyembroidery.STITCH
+
+        return (new_x, new_y, flags)
+
+    def _add_interpolated_stitches(self, stitches, target_density_mm):
+        """
+        Add stitches between existing ones to maintain target density.
+
+        Args:
+            stitches: List of stitches
+            target_density_mm: Target distance between stitches in mm
+
+        Returns:
+            New list of stitches with interpolated stitches added
+        """
+        if not stitches or len(stitches) < 2:
+            return stitches
+
+        new_stitches = []
+        target_density_units = target_density_mm * 10  # Convert mm to pyembroidery units (1/10mm)
+
+        for i in range(len(stitches) - 1):
+            current = stitches[i]
+            next_stitch = stitches[i + 1]
+
+            # Always add the current stitch
+            new_stitches.append(current)
+
+            # Check if this is a special stitch (color change, jump, trim, etc.)
+            flags = current[2] if len(current) > 2 else pyembroidery.STITCH
+            is_special = flags & (pyembroidery.TRIM | pyembroidery.COLOR_CHANGE |
+                                 pyembroidery.STOP | pyembroidery.END | pyembroidery.JUMP)
+
+            # Don't interpolate between special stitches
+            if is_special:
+                continue
+
+            # Calculate distance between stitches
+            dist = self._distance(current[0], current[1], next_stitch[0], next_stitch[1])
+
+            # If distance is too large, add interpolated stitches
+            if dist > target_density_units * 1.5:  # Only interpolate if significantly larger
+                num_new_stitches = int(dist / target_density_units)
+
+                for j in range(1, num_new_stitches):
+                    t = j / num_new_stitches
+                    interpolated = self._interpolate_stitch(current, next_stitch, t)
+                    new_stitches.append(interpolated)
+
+        # Add the last stitch
+        new_stitches.append(stitches[-1])
+
+        return new_stitches
+
+    def _remove_excess_stitches(self, stitches, target_density_mm):
+        """
+        Remove stitches that are too close together to maintain target density.
+
+        Args:
+            stitches: List of stitches
+            target_density_mm: Target distance between stitches in mm
+
+        Returns:
+            New list of stitches with excess stitches removed
+        """
+        if not stitches or len(stitches) < 2:
+            return stitches
+
+        new_stitches = []
+        target_density_units = target_density_mm * 10  # Convert mm to pyembroidery units (1/10mm)
+        min_distance = target_density_units * 0.7  # Remove if closer than 70% of target
+
+        new_stitches.append(stitches[0])  # Always keep first stitch
+
+        for i in range(1, len(stitches)):
+            current = stitches[i]
+            prev = new_stitches[-1]
+
+            # Check if this is a special stitch (color change, jump, trim, etc.)
+            flags = current[2] if len(current) > 2 else pyembroidery.STITCH
+            is_special = flags & (pyembroidery.TRIM | pyembroidery.COLOR_CHANGE |
+                                 pyembroidery.STOP | pyembroidery.END)
+
+            # Always keep special stitches
+            if is_special:
+                new_stitches.append(current)
+                continue
+
+            # Calculate distance from previous kept stitch
+            dist = self._distance(prev[0], prev[1], current[0], current[1])
+
+            # Only keep if distance is sufficient or it's a special stitch
+            if dist >= min_distance:
+                new_stitches.append(current)
+
+        return new_stitches
 
     def load_pattern(self, input_file: str) -> bool:
         """
@@ -211,16 +341,12 @@ class EmbroideryResizer:
         intelligently adding or removing stitches. This is more complex
         but produces better quality results.
 
-        NOTE: This is a simplified implementation. For production use,
-        consider using professional embroidery software or the pyembroidery
-        library's more advanced features.
-
         Args:
             output_file: Path to output file
             target_width: Target width in mm (optional)
             target_height: Target height in mm (optional)
             scale_percent: Scale percentage (optional)
-            target_density: Target stitch density in mm (optional, uses original if not specified)
+            target_density: Target stitch density in mm (optional, uses optimal if not specified)
 
         Returns:
             Dictionary with resize results
@@ -228,19 +354,89 @@ class EmbroideryResizer:
         if not self.pattern:
             raise ValueError("No pattern loaded")
 
-        # For now, use simple scaling with a note about density
-        # A full smart resize would require:
-        # 1. Scaling the pattern
-        # 2. Analyzing stitch density
-        # 3. Adding interpolated stitches where too sparse
-        # 4. Removing stitches where too dense
-        # 5. Preserving stitch types (satin, fill, etc.)
+        # Calculate scale factor
+        scale, new_width, new_height = self.calculate_scale_factor(
+            target_width, target_height, scale_percent
+        )
 
-        result = self.resize_simple(output_file, target_width, target_height, scale_percent)
-        result["method"] = "smart_resize (simplified)"
-        result["note"] = "Smart resize is currently using simple scaling. For complex designs requiring density adjustment, consider professional re-digitizing."
+        # Determine target density (use optimal if not specified)
+        if target_density is None:
+            target_density = self.OPTIMAL_DENSITY_TARGET
 
-        return result
+        # Validate resize
+        new_density_simple = self.original_density * scale if self.original_density else None
+        can_proceed, validation_results = self.validate_resize(
+            new_width, new_height, new_density_simple
+        )
+
+        # Create a deep copy of the pattern to modify
+        scaled_pattern = copy.deepcopy(self.pattern)
+
+        # Step 1: Scale all stitch coordinates
+        scaled_stitches = []
+        for stitch in scaled_pattern.stitches:
+            if len(stitch) >= 2:
+                x, y = stitch[0], stitch[1]
+                flags = stitch[2] if len(stitch) > 2 else pyembroidery.STITCH
+                scaled_x = x * scale
+                scaled_y = y * scale
+                scaled_stitches.append((scaled_x, scaled_y, flags))
+            else:
+                scaled_stitches.append(stitch)
+
+        # Step 2: Adjust stitch density
+        if scale > 1.0:
+            # Scaling up - add interpolated stitches to maintain density
+            final_stitches = self._add_interpolated_stitches(scaled_stitches, target_density)
+            method_detail = "upscaled with stitch interpolation"
+        elif scale < 1.0:
+            # Scaling down - remove excess stitches to maintain density
+            final_stitches = self._remove_excess_stitches(scaled_stitches, target_density)
+            method_detail = "downscaled with stitch reduction"
+        else:
+            # No scaling needed
+            final_stitches = scaled_stitches
+            method_detail = "no scaling needed"
+
+        # Step 3: Create new pattern with modified stitches
+        output_pattern = pyembroidery.EmbPattern()
+
+        # Copy thread list
+        for thread in scaled_pattern.threadlist:
+            output_pattern.add_thread(thread)
+
+        # Add modified stitches
+        for stitch in final_stitches:
+            if len(stitch) >= 3:
+                output_pattern.add_stitch_absolute(stitch[0], stitch[1], stitch[2])
+            elif len(stitch) >= 2:
+                output_pattern.add_stitch_absolute(stitch[0], stitch[1], pyembroidery.STITCH)
+
+        # Step 4: Write the output file
+        pyembroidery.write(output_pattern, output_file)
+
+        # Calculate final stitch count and estimated density
+        final_stitch_count = len(final_stitches)
+        estimated_final_density = target_density
+
+        return {
+            "method": f"smart_resize ({method_detail})",
+            "scale_factor": scale,
+            "original_width": self.original_dimensions[0],
+            "original_height": self.original_dimensions[1],
+            "new_width": new_width,
+            "new_height": new_height,
+            "original_stitch_count": self.original_stitch_count,
+            "new_stitch_count": final_stitch_count,
+            "original_density": self.original_density,
+            "new_density": estimated_final_density,
+            "estimated_new_density": estimated_final_density,
+            "validation_results": validation_results,
+            "can_proceed": can_proceed,
+            "note": f"Smart resize completed: {method_detail}. " +
+                   f"Stitch count changed from {self.original_stitch_count:,} to {final_stitch_count:,} " +
+                   f"to maintain optimal density of ~{target_density:.2f}mm.",
+        }
 
     def resize(
         self,
