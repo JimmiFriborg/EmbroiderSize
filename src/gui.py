@@ -26,8 +26,8 @@ class EmbroiderSizeGUI(ctk.CTk):
 
         # Window configuration
         self.title("EmbroiderSize - Smart Embroidery Resizer")
-        self.geometry("900x700")
-        self.minsize(800, 600)
+        self.geometry("900x1000")
+        self.minsize(800, 900)
 
         # Initialize resizer
         self.resizer = EmbroideryResizer()
@@ -104,6 +104,59 @@ class EmbroiderSizeGUI(ctk.CTk):
         )
         self.info_text.configure(state="disabled")
 
+        # ===== Hoop Size Presets Frame =====
+        self.hoop_frame = ctk.CTkFrame(self)
+        self.hoop_title = ctk.CTkLabel(
+            self.hoop_frame,
+            text="🎯 Hoop Size Presets",
+            font=ctk.CTkFont(size=16, weight="bold"),
+        )
+
+        self.hoop_desc_label = ctk.CTkLabel(
+            self.hoop_frame,
+            text="Quick resize to fit common embroidery hoop sizes",
+            font=ctk.CTkFont(size=10),
+            text_color="gray",
+        )
+
+        # Define common hoop sizes (width, height in mm)
+        self.hoop_presets = {
+            "Brother PP1 (4×4\")": (100, 100),
+            "Small (2×2\")": (50, 50),
+            "Medium (5×7\")": (130, 180),
+            "Large (8×8\")": (200, 200),
+            "XL (8×12\")": (200, 300),
+            "Jumbo (14×14\")": (360, 360),
+        }
+
+        # Create preset buttons in a grid
+        self.hoop_buttons = {}
+        for i, (name, _) in enumerate(self.hoop_presets.items()):
+            btn = ctk.CTkButton(
+                self.hoop_frame,
+                text=name,
+                command=lambda n=name: self._apply_hoop_preset(n),
+                width=120,
+                height=30,
+                font=ctk.CTkFont(size=11),
+            )
+            self.hoop_buttons[name] = btn
+
+        # Unit selector for hoop sizes
+        self.hoop_unit_var = ctk.StringVar(value="mm")
+        self.hoop_unit_label = ctk.CTkLabel(
+            self.hoop_frame,
+            text="Display units:",
+            font=ctk.CTkFont(size=10),
+        )
+        self.hoop_unit_menu = ctk.CTkSegmentedButton(
+            self.hoop_frame,
+            values=["mm", "inches"],
+            variable=self.hoop_unit_var,
+            width=150,
+            height=25,
+        )
+
         # ===== Resize Controls Frame =====
         self.resize_frame = ctk.CTkFrame(self)
         self.resize_title = ctk.CTkLabel(
@@ -119,10 +172,21 @@ class EmbroiderSizeGUI(ctk.CTk):
             font=ctk.CTkFont(size=12),
         )
         self.mode_var = ctk.StringVar(value="simple")
+        self.mode_var.trace_add("write", self._on_mode_changed)
         self.mode_menu = ctk.CTkSegmentedButton(
             self.resize_frame,
             values=["simple", "smart"],
             variable=self.mode_var,
+        )
+
+        # Mode description label
+        self.mode_desc_label = ctk.CTkLabel(
+            self.resize_frame,
+            text="Simple mode: Fast scaling by changing stitch spacing (may affect density)",
+            font=ctk.CTkFont(size=10),
+            text_color="gray",
+            wraplength=600,
+            justify="left",
         )
 
         # Resize by selector
@@ -131,7 +195,7 @@ class EmbroiderSizeGUI(ctk.CTk):
             text="Resize By:",
             font=ctk.CTkFont(size=12),
         )
-        self.resize_by_var = ctk.StringVar(value="scale")
+        self.resize_by_var = ctk.StringVar(value="")
         self.resize_by_menu = ctk.CTkSegmentedButton(
             self.resize_frame,
             values=["scale", "width", "height", "both"],
@@ -176,8 +240,7 @@ class EmbroiderSizeGUI(ctk.CTk):
             width=100,
         )
 
-        # Update visibility based on resize_by
-        self._on_resize_by_changed("scale")
+        # All input fields shown by default - will update when user selects resize mode
 
         # ===== Validation Frame =====
         self.validation_frame = ctk.CTkFrame(self)
@@ -259,45 +322,65 @@ class EmbroiderSizeGUI(ctk.CTk):
         self.info_title.grid(row=0, column=0, padx=15, pady=(15, 5), sticky="w")
         self.info_text.grid(row=1, column=0, padx=15, pady=(5, 15), sticky="nsew")
 
+        # Hoop size presets
+        self.hoop_frame.grid(row=3, column=0, padx=20, pady=10, sticky="ew")
+        self.hoop_frame.grid_columnconfigure(0, weight=1)
+        self.hoop_frame.grid_columnconfigure(1, weight=1)
+        self.hoop_frame.grid_columnconfigure(2, weight=1)
+
+        self.hoop_title.grid(row=0, column=0, columnspan=3, padx=15, pady=(15, 5), sticky="w")
+        self.hoop_desc_label.grid(row=1, column=0, columnspan=3, padx=15, pady=(0, 10), sticky="w")
+
+        # Layout preset buttons in 2 rows of 3
+        for i, (name, btn) in enumerate(self.hoop_buttons.items()):
+            row = 2 + (i // 3)
+            col = i % 3
+            btn.grid(row=row, column=col, padx=5, pady=5, sticky="ew")
+
+        # Unit selector at the bottom
+        self.hoop_unit_label.grid(row=4, column=0, padx=(15, 5), pady=(10, 15), sticky="e")
+        self.hoop_unit_menu.grid(row=4, column=1, columnspan=2, padx=(5, 15), pady=(10, 15), sticky="w")
+
         # Resize controls
-        self.resize_frame.grid(row=3, column=0, padx=20, pady=10, sticky="nsew")
+        self.resize_frame.grid(row=4, column=0, padx=20, pady=10, sticky="nsew")
         self.resize_frame.grid_columnconfigure(1, weight=1)
 
         self.resize_title.grid(row=0, column=0, columnspan=4, padx=15, pady=(15, 10), sticky="w")
 
         self.mode_label.grid(row=1, column=0, padx=(15, 5), pady=5, sticky="w")
         self.mode_menu.grid(row=1, column=1, columnspan=3, padx=(5, 15), pady=5, sticky="ew")
+        self.mode_desc_label.grid(row=2, column=0, columnspan=4, padx=15, pady=(0, 10), sticky="w")
 
-        self.resize_by_label.grid(row=2, column=0, padx=(15, 5), pady=5, sticky="w")
-        self.resize_by_menu.grid(row=2, column=1, columnspan=3, padx=(5, 15), pady=5, sticky="ew")
+        self.resize_by_label.grid(row=3, column=0, padx=(15, 5), pady=5, sticky="w")
+        self.resize_by_menu.grid(row=3, column=1, columnspan=3, padx=(5, 15), pady=5, sticky="ew")
 
-        self.scale_label.grid(row=3, column=0, padx=(15, 5), pady=5, sticky="w")
-        self.scale_entry.grid(row=3, column=1, padx=(5, 15), pady=5, sticky="w")
+        self.scale_label.grid(row=4, column=0, padx=(15, 5), pady=5, sticky="w")
+        self.scale_entry.grid(row=4, column=1, padx=(5, 15), pady=5, sticky="w")
 
-        self.width_label.grid(row=4, column=0, padx=(15, 5), pady=5, sticky="w")
-        self.width_entry.grid(row=4, column=1, padx=(5, 15), pady=5, sticky="w")
+        self.width_label.grid(row=5, column=0, padx=(15, 5), pady=5, sticky="w")
+        self.width_entry.grid(row=5, column=1, padx=(5, 15), pady=5, sticky="w")
 
-        self.height_label.grid(row=5, column=0, padx=(15, 5), pady=5, sticky="w")
-        self.height_entry.grid(row=5, column=1, padx=(5, 15), pady=5, sticky="w")
+        self.height_label.grid(row=6, column=0, padx=(15, 5), pady=5, sticky="w")
+        self.height_entry.grid(row=6, column=1, padx=(5, 15), pady=5, sticky="w")
 
         # Validation results
-        self.validation_frame.grid(row=4, column=0, padx=20, pady=10, sticky="nsew")
+        self.validation_frame.grid(row=5, column=0, padx=20, pady=10, sticky="nsew")
         self.validation_frame.grid_columnconfigure(0, weight=1)
         self.validation_frame.grid_rowconfigure(1, weight=1)
         self.validation_title.grid(row=0, column=0, padx=15, pady=(15, 5), sticky="w")
         self.validation_text.grid(row=1, column=0, padx=15, pady=(5, 15), sticky="nsew")
 
         # Action buttons
-        self.action_frame.grid(row=5, column=0, padx=20, pady=10, sticky="ew")
+        self.action_frame.grid(row=6, column=0, padx=20, pady=10, sticky="ew")
         self.action_frame.grid_columnconfigure(0, weight=1)
         self.action_frame.grid_columnconfigure(1, weight=1)
         self.preview_btn.grid(row=0, column=0, padx=10, pady=5, sticky="e")
         self.resize_btn.grid(row=0, column=1, padx=10, pady=5, sticky="w")
 
         # Progress and status
-        self.progress_bar.grid(row=6, column=0, padx=20, pady=(10, 5), sticky="ew")
+        self.progress_bar.grid(row=7, column=0, padx=20, pady=(10, 5), sticky="ew")
         self.progress_bar.grid_remove()  # Hide initially
-        self.status_label.grid(row=7, column=0, padx=20, pady=(5, 10))
+        self.status_label.grid(row=8, column=0, padx=20, pady=(5, 10))
 
     def _setup_drag_drop(self):
         """Setup drag and drop functionality."""
@@ -313,9 +396,82 @@ class EmbroiderSizeGUI(ctk.CTk):
         self.bind("<Control-o>", lambda e: self._select_input_file())
         self.bind("<Control-q>", lambda e: self.quit())
 
+    def _on_mode_changed(self, *args):
+        """Update mode description when mode changes."""
+        mode = self.mode_var.get()
+        if mode == "simple":
+            self.mode_desc_label.configure(
+                text="Simple mode: Fast scaling by changing stitch spacing (may affect density)"
+            )
+        elif mode == "smart":
+            self.mode_desc_label.configure(
+                text="Smart mode: Attempts to preserve stitch density by adjusting stitch count (Note: Currently uses simplified algorithm)"
+            )
+
+    def _apply_hoop_preset(self, preset_name: str):
+        """Apply a hoop size preset to resize the design to fit."""
+        if not self.resizer.pattern:
+            messagebox.showwarning("No File", "Please load an embroidery file first")
+            return
+
+        # Get hoop dimensions
+        hoop_width, hoop_height = self.hoop_presets[preset_name]
+
+        # Get current pattern dimensions
+        info = self.resizer.get_pattern_info()
+        current_width = info['width_mm']
+        current_height = info['height_mm']
+
+        # Calculate scale to fit within hoop (with 5mm margin for safety)
+        margin = 5  # mm
+        max_width = hoop_width - margin
+        max_height = hoop_height - margin
+
+        # Calculate scale factors needed for width and height
+        scale_width = max_width / current_width if current_width > 0 else 1
+        scale_height = max_height / current_height if current_height > 0 else 1
+
+        # Use the smaller scale to ensure it fits in both dimensions
+        scale_factor = min(scale_width, scale_height)
+
+        # Calculate new dimensions
+        new_width = current_width * scale_factor
+        new_height = current_height * scale_factor
+
+        # Update the resize mode and values
+        self.resize_by_var.set("both")
+        self._on_resize_by_changed("both")
+
+        # Set the new dimensions
+        self.width_entry.delete(0, "end")
+        self.width_entry.insert(0, f"{new_width:.2f}")
+        self.height_entry.delete(0, "end")
+        self.height_entry.insert(0, f"{new_height:.2f}")
+
+        # Clear scale
+        self.scale_entry.delete(0, "end")
+
+        # Show a message
+        self._set_status(
+            f"Preset applied: {preset_name} - Design will fit within {hoop_width}×{hoop_height}mm with {margin}mm margin",
+            processing=False
+        )
+
+        # Trigger preview automatically
+        self._preview_resize()
+
     def _on_resize_by_changed(self, value):
         """Handle resize by mode change."""
-        if value == "scale":
+        # Show all fields by default (when value is empty or None)
+        if not value or value == "":
+            # Show all options initially
+            self.scale_label.grid()
+            self.scale_entry.grid()
+            self.width_label.grid()
+            self.width_entry.grid()
+            self.height_label.grid()
+            self.height_entry.grid()
+        elif value == "scale":
             self.scale_label.grid()
             self.scale_entry.grid()
             self.width_label.grid_remove()
@@ -535,6 +691,30 @@ Stitch Density: {info['stitch_density_mm']:.3f}mm
         width = None
         height = None
         scale = None
+
+        # If no mode selected, auto-detect based on which fields have values
+        if not resize_by or resize_by == "":
+            scale_text = self.scale_entry.get().strip()
+            width_text = self.width_entry.get().strip()
+            height_text = self.height_entry.get().strip()
+
+            # Count how many fields have values
+            has_scale = bool(scale_text)
+            has_width = bool(width_text)
+            has_height = bool(height_text)
+
+            if has_scale and not has_width and not has_height:
+                resize_by = "scale"
+            elif has_width and not has_scale and not has_height:
+                resize_by = "width"
+            elif has_height and not has_scale and not has_width:
+                resize_by = "height"
+            elif has_width and has_height and not has_scale:
+                resize_by = "both"
+            elif not has_scale and not has_width and not has_height:
+                raise ValueError("Please enter resize values (scale, width, and/or height)")
+            else:
+                raise ValueError("Please select a resize mode or enter values in only one method (scale OR width OR height OR both width and height)")
 
         if resize_by == "scale":
             scale_text = self.scale_entry.get().strip()
