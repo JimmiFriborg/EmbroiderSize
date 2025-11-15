@@ -5,11 +5,15 @@
  */
 
 import { useState, useEffect } from "react";
+import { open, save } from "@tauri-apps/plugin-dialog";
+import { readFile, writeFile } from "@tauri-apps/plugin-fs";
 import "./App.css";
 import type { DesignDocument, ValidationResult } from "./types";
 import { BROTHER_PP1_PROFILE } from "./types";
 import { StitchCanvas } from "./components/StitchCanvas";
 import { scaleDesign } from "./engine/simpleskale";
+import { parseEmbroideryFile } from "./lib/parsers";
+import { writeEmbroideryFile, getFileExtension } from "./lib/writers";
 
 function App() {
   const [originalDesign, setOriginalDesign] = useState<DesignDocument | null>(null);
@@ -62,6 +66,76 @@ function App() {
     setOriginalDesign(testDesign);
     setScaledDesign(testDesign); // Initially show original
     setScale(100); // Reset scale
+  };
+
+  // File upload handler
+  const handleFileUpload = async () => {
+    try {
+      // Open file picker
+      const selected = await open({
+        multiple: false,
+        filters: [
+          {
+            name: "Embroidery Files",
+            extensions: ["pes", "dst"],
+          },
+        ],
+      });
+
+      if (!selected) return; // User canceled
+
+      // Read the file
+      const fileData = await readFile(selected.path);
+
+      // Parse the embroidery file
+      const fileName = selected.name || "Unknown";
+      const design = parseEmbroideryFile(fileData.buffer, fileName);
+
+      // Set the design
+      setOriginalDesign(design);
+      setScaledDesign(design);
+      setScale(100);
+    } catch (error) {
+      console.error("Failed to load file:", error);
+      alert(`Failed to load file: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  // File export handler
+  const handleFileExport = async () => {
+    if (!scaledDesign) return;
+
+    try {
+      // Determine file extension based on original format
+      const defaultExt = getFileExtension(scaledDesign);
+      const defaultFileName = `${scaledDesign.name}_${scale}%`;
+
+      // Open save dialog
+      const savePath = await save({
+        defaultPath: `${defaultFileName}.${defaultExt}`,
+        filters: [
+          {
+            name: "PES Files",
+            extensions: ["pes"],
+          },
+          {
+            name: "DST Files",
+            extensions: ["dst"],
+          },
+        ],
+      });
+
+      if (!savePath) return; // User canceled
+
+      // Write the scaled design to file
+      const buffer = writeEmbroideryFile(scaledDesign, savePath);
+      await writeFile(savePath, new Uint8Array(buffer));
+
+      alert(`File saved successfully to:\n${savePath}`);
+    } catch (error) {
+      console.error("Failed to save file:", error);
+      alert(`Failed to save file: ${error instanceof Error ? error.message : String(error)}`);
+    }
   };
 
   // Apply scaling when scale changes
@@ -117,16 +191,51 @@ function App() {
 
           <div style={{ marginBottom: "20px" }}>
             <button
-              onClick={createTestDesign}
+              onClick={handleFileUpload}
               style={{
                 width: "100%",
-                padding: "10px",
-                background: "#007bff",
+                padding: "12px",
+                background: "#28a745",
                 color: "white",
                 border: "none",
                 borderRadius: "4px",
                 cursor: "pointer",
                 fontSize: "14px",
+                fontWeight: "bold",
+                marginBottom: "10px",
+              }}
+            >
+              📁 Open PES/DST File
+            </button>
+            <button
+              onClick={handleFileExport}
+              disabled={!scaledDesign}
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: scaledDesign ? "#007bff" : "#cccccc",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: scaledDesign ? "pointer" : "not-allowed",
+                fontSize: "14px",
+                fontWeight: "bold",
+                marginBottom: "10px",
+              }}
+            >
+              💾 Export Scaled File
+            </button>
+            <button
+              onClick={createTestDesign}
+              style={{
+                width: "100%",
+                padding: "10px",
+                background: "#6c757d",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "13px",
               }}
             >
               Load Test Pattern
@@ -223,7 +332,7 @@ function App() {
 
           <div style={{ marginTop: "30px", fontSize: "11px", color: "#999" }}>
             <p>
-              <strong>Status:</strong> Phase 2 In Progress
+              <strong>Status:</strong> Phase 2 Complete! 🎉
             </p>
             <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
               <li>✅ File parsers (PES/DST)</li>
@@ -231,7 +340,8 @@ function App() {
               <li>✅ Canvas renderer</li>
               <li>✅ Real-time scaling</li>
               <li>✅ Validation display</li>
-              <li>⏭️ File upload (next)</li>
+              <li>✅ File upload</li>
+              <li>✅ File export</li>
             </ul>
           </div>
         </aside>
