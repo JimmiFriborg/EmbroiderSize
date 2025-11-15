@@ -82,5 +82,90 @@ def test_validation():
         os.unlink(tmp.name)
 
 
+def test_aspect_ratio_preserved_by_default():
+    """Test that aspect ratio is preserved by default when both dimensions specified."""
+    resizer = EmbroideryResizer()
+    pattern = create_test_pattern()
+
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".pes", delete=False) as tmp:
+        pyembroidery.write(pattern, tmp.name)
+        resizer.load_pattern(tmp.name)
+
+        # Original is 10x10, request 20x30 (different aspect ratio)
+        scale, new_width, new_height = resizer.calculate_scale_factor(
+            target_width=20.0,
+            target_height=30.0,
+            preserve_aspect_ratio=True
+        )
+
+        # Should use smaller scale (2.0 for width) to preserve aspect ratio
+        assert abs(scale - 2.0) < 0.01
+        assert abs(new_width - 20.0) < 0.1
+        assert abs(new_height - 20.0) < 0.1  # Not 30.0!
+
+        # Clean up
+        import os
+        os.unlink(tmp.name)
+
+
+def test_aspect_ratio_can_be_disabled():
+    """Test that aspect ratio preservation can be disabled."""
+    resizer = EmbroideryResizer()
+    pattern = create_test_pattern()
+
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".pes", delete=False) as tmp:
+        pyembroidery.write(pattern, tmp.name)
+        resizer.load_pattern(tmp.name)
+
+        # Request 20mm x 30mm with aspect ratio preservation disabled
+        scale, new_width, new_height = resizer.calculate_scale_factor(
+            target_width=20.0,
+            target_height=30.0,
+            preserve_aspect_ratio=False
+        )
+
+        # Should allow distortion
+        assert abs(new_width - 20.0) < 0.1
+        assert abs(new_height - 30.0) < 0.1
+        assert abs(scale - 2.5) < 0.01  # Average of 2.0 and 3.0
+
+        # Clean up
+        import os
+        os.unlink(tmp.name)
+
+
+def test_aspect_ratio_fit_within_bounds():
+    """Test that design fits within specified bounds when aspect preserved."""
+    resizer = EmbroideryResizer()
+    pattern = create_test_pattern()
+
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".pes", delete=False) as tmp:
+        pyembroidery.write(pattern, tmp.name)
+        resizer.load_pattern(tmp.name)
+
+        # Original is 10x10, request 100x20 bounds
+        scale, new_width, new_height = resizer.calculate_scale_factor(
+            target_width=100.0,
+            target_height=20.0,
+            preserve_aspect_ratio=True
+        )
+
+        # Should use height scale (2.0) which is smaller
+        assert abs(scale - 2.0) < 0.01
+        assert abs(new_width - 20.0) < 0.1
+        assert abs(new_height - 20.0) < 0.1
+
+        # Verify it fits within bounds
+        assert new_width <= 100.0
+        assert new_height <= 20.0
+
+        # Clean up
+        import os
+        os.unlink(tmp.name)
+
+
 if __name__ == "__main__":
     pytest.main([__file__])

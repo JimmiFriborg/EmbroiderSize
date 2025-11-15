@@ -202,6 +202,7 @@ class EmbroideryResizer:
         target_width: Optional[float] = None,
         target_height: Optional[float] = None,
         scale_percent: Optional[float] = None,
+        preserve_aspect_ratio: bool = True,
     ) -> Tuple[float, float, float]:
         """
         Calculate the scale factor needed for resize.
@@ -210,6 +211,9 @@ class EmbroideryResizer:
             target_width: Target width in mm (optional)
             target_height: Target height in mm (optional)
             scale_percent: Scale percentage (e.g., 150 for 150%) (optional)
+            preserve_aspect_ratio: If True, maintains original aspect ratio when both
+                                   width and height are specified (default: True).
+                                   Uses the smaller scale to fit within bounds.
 
         Returns:
             Tuple of (scale_factor, new_width, new_height)
@@ -226,9 +230,17 @@ class EmbroideryResizer:
         elif target_width is not None and target_height is not None:
             scale_w = target_width / orig_width
             scale_h = target_height / orig_height
-            scale = (scale_w + scale_h) / 2  # Average scale
-            new_width = target_width
-            new_height = target_height
+
+            if preserve_aspect_ratio:
+                # Use the smaller scale to fit within bounds (prevents distortion)
+                scale = min(scale_w, scale_h)
+                new_width = orig_width * scale
+                new_height = orig_height * scale
+            else:
+                # Non-uniform scaling (may distort the design)
+                scale = (scale_w + scale_h) / 2  # Average for reporting
+                new_width = target_width
+                new_height = target_height
         elif target_width is not None:
             scale = target_width / orig_width
             new_width = target_width
@@ -274,6 +286,7 @@ class EmbroideryResizer:
         target_width: Optional[float] = None,
         target_height: Optional[float] = None,
         scale_percent: Optional[float] = None,
+        preserve_aspect_ratio: bool = True,
     ) -> dict:
         """
         Resize using simple scaling (changes stitch density).
@@ -286,6 +299,7 @@ class EmbroideryResizer:
             target_width: Target width in mm (optional)
             target_height: Target height in mm (optional)
             scale_percent: Scale percentage (optional)
+            preserve_aspect_ratio: Maintain original aspect ratio (default: True)
 
         Returns:
             Dictionary with resize results
@@ -295,7 +309,7 @@ class EmbroideryResizer:
 
         # Calculate scale factor
         scale, new_width, new_height = self.calculate_scale_factor(
-            target_width, target_height, scale_percent
+            target_width, target_height, scale_percent, preserve_aspect_ratio
         )
 
         # Validate resize
@@ -333,6 +347,7 @@ class EmbroideryResizer:
         target_height: Optional[float] = None,
         scale_percent: Optional[float] = None,
         target_density: Optional[float] = None,
+        preserve_aspect_ratio: bool = True,
     ) -> dict:
         """
         Resize with density preservation (adds/removes stitches).
@@ -347,6 +362,7 @@ class EmbroideryResizer:
             target_height: Target height in mm (optional)
             scale_percent: Scale percentage (optional)
             target_density: Target stitch density in mm (optional, uses optimal if not specified)
+            preserve_aspect_ratio: Maintain original aspect ratio (default: True)
 
         Returns:
             Dictionary with resize results
@@ -356,7 +372,7 @@ class EmbroideryResizer:
 
         # Calculate scale factor
         scale, new_width, new_height = self.calculate_scale_factor(
-            target_width, target_height, scale_percent
+            target_width, target_height, scale_percent, preserve_aspect_ratio
         )
 
         # Determine target density (use optimal if not specified)
@@ -445,6 +461,7 @@ class EmbroideryResizer:
         target_height: Optional[float] = None,
         scale_percent: Optional[float] = None,
         mode: Literal["simple", "smart"] = "simple",
+        preserve_aspect_ratio: bool = True,
     ) -> dict:
         """
         Resize the embroidery pattern.
@@ -455,11 +472,14 @@ class EmbroideryResizer:
             target_height: Target height in mm (optional)
             scale_percent: Scale percentage (optional)
             mode: Resize mode - 'simple' or 'smart'
+            preserve_aspect_ratio: Maintain original aspect ratio (default: True)
 
         Returns:
             Dictionary with resize results
         """
         if mode == "smart":
-            return self.resize_smart(output_file, target_width, target_height, scale_percent)
+            return self.resize_smart(output_file, target_width, target_height, scale_percent,
+                                   preserve_aspect_ratio=preserve_aspect_ratio)
         else:
-            return self.resize_simple(output_file, target_width, target_height, scale_percent)
+            return self.resize_simple(output_file, target_width, target_height, scale_percent,
+                                    preserve_aspect_ratio=preserve_aspect_ratio)
