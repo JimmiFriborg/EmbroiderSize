@@ -19,7 +19,8 @@ This repository contains **two applications**:
 ### 🚀 **SimpleSkale 4.0** - Next Generation (Alpha)
 - **Location:** `/simpleskale-v4/` directory
 - **Launch:** `cd simpleskale-v4 && npm run tauri dev`
-- **Status:** 🔄 Phase 1 Complete, Active Development
+- **Windows:** First-time setup required - [WINDOWS_SETUP.md](simpleskale-v4/WINDOWS_SETUP.md) 🪟
+- **Status:** 🔄 Phase 2 In Progress - Real-time scaling working!
 - **Best for:** Modern desktop experience, real-time preview, advanced features
 - **Documentation:** [simpleskale-v4/QUICKSTART.md](simpleskale-v4/QUICKSTART.md)
 - **See:** [SimpleSkale Implementation Plan](EmbroiderSize%204.0%20–%20"SimpleSkale"%20Implementation%20Plan.md)

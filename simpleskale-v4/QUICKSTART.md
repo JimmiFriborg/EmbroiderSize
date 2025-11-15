@@ -2,12 +2,27 @@
 
 This guide will help you launch and test the SimpleSkale 4.0 demo application.
 
+## 🪟 Windows Users - Start Here!
+
+**If you're on Windows and getting "cargo not found" error:**
+
+👉 **See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for complete Windows setup instructions!**
+
+Quick fix:
+1. Install Rust from https://rustup.rs/
+2. Run `rustup-init.exe` and choose default installation
+3. **Close and reopen PowerShell** (required!)
+4. Verify with `cargo --version`
+5. Then continue with this guide
+
+---
+
 ## 📋 Prerequisites
 
 Before running SimpleSkale 4.0, ensure you have:
 
 - ✅ **Node.js 18+** (current: v22.21.1)
-- ✅ **Rust 1.70+** (current: v1.91.1)
+- ✅ **Rust 1.70+** (current: v1.91.1) - [Windows Setup Guide](WINDOWS_SETUP.md)
 - ✅ **npm 10+**
 
 ### Linux Additional Requirements
