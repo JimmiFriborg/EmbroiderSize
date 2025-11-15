@@ -5,7 +5,7 @@ A fast, safe, Brother PP1-friendly stitch scaling application built with Tauri +
 
 ## 🎯 Project Status
 
-**Current Phase:** Phase 1 - Foundation ✅ **COMPLETE**
+**Current Phase:** Phase 2 - Core Features ✅ **COMPLETE**
 
 ### Phase 1 Completed (100%)
 - ✅ Tauri + React + TypeScript project initialized
@@ -19,12 +19,19 @@ A fast, safe, Brother PP1-friendly stitch scaling application built with Tauri +
 - ✅ **Canvas renderer component (components/StitchCanvas.tsx)**
 - ✅ **Demo application with test pattern**
 
-### Next Phase - UI Polish (Phase 2)
-- ⏭️ File upload dialog (Tauri file picker)
-- ⏭️ Real-time scaling with live preview
+### Phase 2 Completed (100%)
+- ✅ File upload dialog (Tauri file picker)
+- ✅ Real-time scaling with live preview
+- ✅ Live validation display
+- ✅ **File export functionality (PES/DST)**
+- ✅ **Binary file writing utilities (lib/binaryWriter.ts)**
+- ✅ **File writers: PES and DST formats (lib/writers/)**
+
+### Next Phase - UI Polish (Phase 3)
 - ⏭️ Density heatmap visualization
 - ⏭️ Before/After split view
-- ⏭️ Enhanced UI components
+- ⏭️ Enhanced UI components with better styling
+- ⏭️ Undo/Redo support
 
 ### Roadmap
 See `../SIMPLESKALE_READINESS_ANALYSIS.md` for the complete implementation plan and atomic task breakdown.
@@ -53,23 +60,41 @@ simpleskale-v4/
 - **Canvas Rendering:** HTML5 Canvas (may upgrade to WebGL)
 - **Testing:** Jest + React Testing Library (TBD)
 
-## 🚀 Development
+## 🚀 Quick Start
+
+**📖 See [QUICKSTART.md](QUICKSTART.md) for detailed launch instructions!**
+
+### TL;DR - Launch the App
+
+```bash
+# Navigate to this directory
+cd simpleskale-v4
+
+# Install dependencies (first time only)
+npm install
+
+# Run the application
+npm run tauri dev
+```
+
+**Then click "Load Test Pattern" to see the demo!**
 
 ### Prerequisites
 - Node.js 18+ (current: v22.21.1)
 - Rust 1.70+ (current: v1.91.1)
 - npm 10+
+- Linux: Additional webkit2gtk dependencies ([see QUICKSTART.md](QUICKSTART.md#linux-additional-requirements))
 
-### Setup
+### Build Commands
 
 ```bash
-# Install dependencies
-npm install
-
-# Run in development mode (when ready)
+# Development mode (hot reload)
 npm run tauri dev
 
-# Build for production (when ready)
+# Vite dev server only (UI testing)
+npm run dev
+
+# Production build
 npm run tauri build
 ```
 
