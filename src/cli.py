@@ -156,11 +156,19 @@ def info(input_file):
     is_flag=True,
     help="Preview the resize without writing output file",
 )
-def resize(input_file, output_file, width, height, scale, mode, force, preview):
+@click.option(
+    "--no-preserve-aspect",
+    is_flag=True,
+    help="Allow distortion (don't preserve aspect ratio when both width and height specified)",
+)
+def resize(input_file, output_file, width, height, scale, mode, force, preview, no_preserve_aspect):
     """
     Resize an embroidery file.
 
     Specify target size using --width, --height, or --scale.
+
+    By default, aspect ratio is preserved when both width and height are specified.
+    The design will fit within the specified bounds without distortion.
 
     Examples:
 
@@ -170,8 +178,11 @@ def resize(input_file, output_file, width, height, scale, mode, force, preview):
         # Scale to 150% of original size
         embroider-resize resize input.pes output.pes --scale 150
 
-        # Resize to specific dimensions
+        # Fit within 100x80mm bounds (preserves aspect ratio, may be smaller)
         embroider-resize resize input.pes output.pes --width 100 --height 80
+
+        # Allow distortion to exact dimensions
+        embroider-resize resize input.pes output.pes --width 100 --height 80 --no-preserve-aspect
 
         # Preview resize without saving
         embroider-resize resize input.pes output.pes --scale 50 --preview
@@ -195,11 +206,13 @@ def resize(input_file, output_file, width, height, scale, mode, force, preview):
         console.print("\n")
 
         # Perform resize (or preview)
+        preserve_aspect = not no_preserve_aspect
+
         if preview:
             with console.status("[bold blue]Calculating resize..."):
                 # Calculate what would happen
                 scale_factor, new_width, new_height = resizer.calculate_scale_factor(
-                    width, height, scale
+                    width, height, scale, preserve_aspect
                 )
                 new_density = info_data["stitch_density_mm"] * scale_factor
                 can_proceed, validation_results = resizer.validate_resize(
@@ -235,6 +248,7 @@ def resize(input_file, output_file, width, height, scale, mode, force, preview):
                     target_height=height,
                     scale_percent=scale,
                     mode=mode,
+                    preserve_aspect_ratio=preserve_aspect,
                 )
 
             print_resize_results(results)

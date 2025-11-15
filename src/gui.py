@@ -240,6 +240,15 @@ class EmbroiderSizeGUI(ctk.CTk):
             width=100,
         )
 
+        # Aspect ratio preservation checkbox
+        self.preserve_aspect_var = ctk.BooleanVar(value=True)
+        self.preserve_aspect_check = ctk.CTkCheckBox(
+            self.resize_frame,
+            text="Preserve aspect ratio (prevent distortion)",
+            variable=self.preserve_aspect_var,
+            font=ctk.CTkFont(size=11),
+        )
+
         # All input fields shown by default - will update when user selects resize mode
 
         # ===== Validation Frame =====
@@ -362,6 +371,8 @@ class EmbroiderSizeGUI(ctk.CTk):
 
         self.height_label.grid(row=6, column=0, padx=(15, 5), pady=5, sticky="w")
         self.height_entry.grid(row=6, column=1, padx=(5, 15), pady=5, sticky="w")
+
+        self.preserve_aspect_check.grid(row=7, column=0, columnspan=4, padx=15, pady=(5, 15), sticky="w")
 
         # Validation results
         self.validation_frame.grid(row=5, column=0, padx=20, pady=10, sticky="nsew")
@@ -588,8 +599,9 @@ Stitch Density: {info['stitch_density_mm']:.3f}mm
 
         def preview():
             try:
+                preserve_aspect = self.preserve_aspect_var.get()
                 scale_factor, new_width, new_height = self.resizer.calculate_scale_factor(
-                    width, height, scale
+                    width, height, scale, preserve_aspect
                 )
                 info = self.resizer.get_pattern_info()
                 new_density = info["stitch_density_mm"] * scale_factor
@@ -654,12 +666,14 @@ Stitch Density: {info['stitch_density_mm']:.3f}mm
         def resize():
             try:
                 mode = self.mode_var.get()
+                preserve_aspect = self.preserve_aspect_var.get()
                 results = self.resizer.resize(
                     output_file,
                     target_width=width,
                     target_height=height,
                     scale_percent=scale,
                     mode=mode,
+                    preserve_aspect_ratio=preserve_aspect,
                 )
                 self.after(0, lambda: self._on_resize_done(results, output_file))
             except Exception as e:

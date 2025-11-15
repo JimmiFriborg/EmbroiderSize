@@ -420,6 +420,9 @@ git push -u origin <branch-name>
 - Precision is critical for sizing calculations
 - Test edge cases (very small/large designs)
 - Consider performance for complex designs
+- **Aspect Ratio Preservation (OAC)**: By default, when both width and height are specified,
+  the tool uses the smaller scale factor to fit within bounds without distortion.
+  This is called "Original Aspect Conservation" (OAC). Can be disabled with --no-preserve-aspect flag.
 
 ---
 
@@ -434,6 +437,9 @@ git push -u origin <branch-name>
 ✅ Basic unit tests
 ✅ Comprehensive documentation (README and CLAUDE.md)
 ✅ Brother PP1 connectivity research
+✅ GUI implementation with CustomTkinter
+✅ Smart resize with stitch interpolation/reduction
+✅ **Original Aspect Conservation (OAC)** - Prevents distortion when resizing
 
 ### Next Steps (Roadmap)
 

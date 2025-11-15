@@ -29,9 +29,10 @@ EmbroiderSize provides:
 - **📊 Quality metrics** - Shows stitch density, dimensions, and counts before/after
 - **📦 Portable executable** - Build standalone apps for Windows, Mac, and Linux
 
-**Latest Improvements (v2.0):**
+**Latest Improvements (v2.1):**
+- 🔒 **Aspect Ratio Conservation**: Prevents distortion when resizing to specific dimensions (NEW!)
 - 🎯 **Smart Defaults**: Automatically sets 150% scale for immediate testing
-- 🔒 **Better UX**: Buttons disabled until file is loaded, preventing confusion
+- 📐 **Fit Within Bounds**: Design automatically fits within specified dimensions
 - 📋 **Enhanced Validation**: Clear quality assessment with color-coded warnings
 - 💬 **Helpful Messages**: Status bar guides you through each step
 - 🎨 **Improved Display**: Better formatted validation results and pattern info
@@ -40,6 +41,7 @@ EmbroiderSize provides:
 
 - 🖥️ **Modern GUI** - User-friendly graphical interface (NEW!)
 - 📏 **Resize by width, height, or percentage**
+- 🔒 **Aspect ratio preservation** - Prevents distortion when resizing (NEW!)
 - 🎯 **Smart validation** with safety warnings
 - 🔍 **Preview mode** to see results before saving
 - 📊 **Detailed pattern information** display
@@ -122,10 +124,11 @@ python -m src.gui
    - **Scale** - Resize by percentage (default: 150% = 1.5x larger)
    - **Width** - Set target width in mm (maintains aspect ratio)
    - **Height** - Set target height in mm (maintains aspect ratio)
-   - **Both** - Set both width and height explicitly
+   - **Both** - Set both width and height (fits within bounds, preserves aspect ratio)
 
 3. **Adjust Resize Parameters**
    - Modify the scale percentage or dimensions as needed
+   - **Preserve aspect ratio** checkbox prevents distortion (checked by default)
    - Common values: 150 for larger, 75 for smaller, 50 for half size
    - The default 150% scale will make your design 1.5x larger
 
@@ -183,9 +186,14 @@ python -m src.cli resize input.pes output.pes --width 100
 python -m src.cli resize input.pes output.pes --scale 150
 ```
 
-**Resize to specific dimensions:**
+**Fit within specific dimensions (preserves aspect ratio):**
 ```bash
 python -m src.cli resize input.pes output.pes --width 100 --height 80
+```
+
+**Allow distortion to exact dimensions:**
+```bash
+python -m src.cli resize input.pes output.pes --width 100 --height 80 --no-preserve-aspect
 ```
 
 **Preview before saving:**
