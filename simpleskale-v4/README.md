@@ -53,23 +53,41 @@ simpleskale-v4/
 - **Canvas Rendering:** HTML5 Canvas (may upgrade to WebGL)
 - **Testing:** Jest + React Testing Library (TBD)
 
-## 🚀 Development
+## 🚀 Quick Start
+
+**📖 See [QUICKSTART.md](QUICKSTART.md) for detailed launch instructions!**
+
+### TL;DR - Launch the App
+
+```bash
+# Navigate to this directory
+cd simpleskale-v4
+
+# Install dependencies (first time only)
+npm install
+
+# Run the application
+npm run tauri dev
+```
+
+**Then click "Load Test Pattern" to see the demo!**
 
 ### Prerequisites
 - Node.js 18+ (current: v22.21.1)
 - Rust 1.70+ (current: v1.91.1)
 - npm 10+
+- Linux: Additional webkit2gtk dependencies ([see QUICKSTART.md](QUICKSTART.md#linux-additional-requirements))
 
-### Setup
+### Build Commands
 
 ```bash
-# Install dependencies
-npm install
-
-# Run in development mode (when ready)
+# Development mode (hot reload)
 npm run tauri dev
 
-# Build for production (when ready)
+# Vite dev server only (UI testing)
+npm run dev
+
+# Production build
 npm run tauri build
 ```
 

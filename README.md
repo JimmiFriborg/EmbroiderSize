@@ -5,7 +5,28 @@
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Overview
+## 🎯 Choose Your Version
+
+This repository contains **two applications**:
+
+### 📦 **Python GUI/CLI (v0.1.0)** - Current Stable
+- **Location:** Root directory (`/src/`)
+- **Launch:** `python EmbroiderSize.py` (GUI) or `python -m src.cli` (CLI)
+- **Status:** ✅ Fully functional, production-ready
+- **Best for:** Quick command-line usage, scripting, batch processing
+- **Documentation:** See below ⬇️
+
+### 🚀 **SimpleSkale 4.0** - Next Generation (Alpha)
+- **Location:** `/simpleskale-v4/` directory
+- **Launch:** `cd simpleskale-v4 && npm run tauri dev`
+- **Status:** 🔄 Phase 1 Complete, Active Development
+- **Best for:** Modern desktop experience, real-time preview, advanced features
+- **Documentation:** [simpleskale-v4/QUICKSTART.md](simpleskale-v4/QUICKSTART.md)
+- **See:** [SimpleSkale Implementation Plan](EmbroiderSize%204.0%20–%20"SimpleSkale"%20Implementation%20Plan.md)
+
+---
+
+## Overview (Python Version)
 
 EmbroiderSize is a Python-based command-line tool designed to resize embroidery stitch files (.pes, .dst, .jef, and 40+ other formats) intelligently. Unlike simple image resizing, embroidery files contain stitch coordinates that require careful manipulation to maintain quality.
 
