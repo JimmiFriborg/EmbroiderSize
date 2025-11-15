@@ -4,15 +4,19 @@
  * Main React component for SimpleSkale embroidery scaling application.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
-import type { DesignDocument } from "./types";
+import type { DesignDocument, ValidationResult } from "./types";
 import { BROTHER_PP1_PROFILE } from "./types";
 import { StitchCanvas } from "./components/StitchCanvas";
+import { scaleDesign } from "./engine/simpleskale";
 
 function App() {
-  const [design, setDesign] = useState<DesignDocument | null>(null);
+  const [originalDesign, setOriginalDesign] = useState<DesignDocument | null>(null);
+  const [scaledDesign, setScaledDesign] = useState<DesignDocument | null>(null);
   const [scale, setScale] = useState<number>(100);
+  const [validationResults, setValidationResults] = useState<ValidationResult[]>([]);
+  const [isScaling, setIsScaling] = useState(false);
 
   // Demo: Create a simple test design
   const createTestDesign = () => {
@@ -55,8 +59,47 @@ function App() {
       },
     };
 
-    setDesign(testDesign);
+    setOriginalDesign(testDesign);
+    setScaledDesign(testDesign); // Initially show original
+    setScale(100); // Reset scale
   };
+
+  // Apply scaling when scale changes
+  useEffect(() => {
+    if (!originalDesign || scale === 100) {
+      setScaledDesign(originalDesign);
+      setValidationResults([]);
+      return;
+    }
+
+    // Debounce the scaling operation
+    setIsScaling(true);
+    const timer = setTimeout(() => {
+      const result = scaleDesign(
+        originalDesign,
+        {
+          scalePercent: scale,
+          preserveAspectRatio: true,
+        },
+        {
+          safeMode: true, // Enable Brother PP1 safe mode
+          targetDensityMm: 0.425,
+        }
+      );
+
+      if (result.success && result.design) {
+        setScaledDesign(result.design);
+        setValidationResults(result.validationResults);
+      } else {
+        // Keep original if scaling failed
+        setScaledDesign(originalDesign);
+        setValidationResults(result.validationResults);
+      }
+      setIsScaling(false);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [originalDesign, scale]);
 
   return (
     <main style={{ padding: "20px", fontFamily: "system-ui, sans-serif" }}>
@@ -90,11 +133,11 @@ function App() {
             </button>
           </div>
 
-          {design && (
+          {originalDesign && scaledDesign && (
             <>
               <div style={{ marginBottom: "20px" }}>
-                <label style={{ display: "block", marginBottom: "8px", fontSize: "14px" }}>
-                  Scale: {scale}%
+                <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "bold" }}>
+                  Scale: {scale}% {isScaling && "⏳"}
                 </label>
                 <input
                   type="range"
@@ -104,19 +147,60 @@ function App() {
                   onChange={(e) => setScale(Number(e.target.value))}
                   style={{ width: "100%" }}
                 />
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "#999", marginTop: "4px" }}>
+                  <span>20%</span>
+                  <span>100%</span>
+                  <span>200%</span>
+                </div>
               </div>
 
-              <div style={{ fontSize: "12px", color: "#666" }}>
-                <h3 style={{ fontSize: "14px", marginBottom: "10px" }}>Design Info</h3>
-                <p>Name: {design.name}</p>
-                <p>Format: {design.originalFormat}</p>
-                <p>Colors: {design.threads.length}</p>
-                <p>Stitches: {design.metadata.currentStitchCount}</p>
+              <div style={{ fontSize: "12px", color: "#666", marginBottom: "20px" }}>
+                <h3 style={{ fontSize: "14px", marginBottom: "10px", fontWeight: "bold" }}>Design Info</h3>
+                <p><strong>Name:</strong> {scaledDesign.name}</p>
+                <p><strong>Format:</strong> {scaledDesign.originalFormat}</p>
+                <p><strong>Colors:</strong> {scaledDesign.threads.length}</p>
                 <p>
-                  Size: {design.metadata.originalWidthMm.toFixed(1)}mm ×{" "}
-                  {design.metadata.originalHeightMm.toFixed(1)}mm
+                  <strong>Stitches:</strong> {scaledDesign.metadata.originalStitchCount.toLocaleString()} →{" "}
+                  <span style={{ color: scale === 100 ? "inherit" : "#007bff" }}>
+                    {scaledDesign.metadata.currentStitchCount.toLocaleString()}
+                  </span>
+                </p>
+                <p>
+                  <strong>Size:</strong> {originalDesign.metadata.originalWidthMm.toFixed(1)}mm ×{" "}
+                  {originalDesign.metadata.originalHeightMm.toFixed(1)}mm
+                  {scale !== 100 && (
+                    <span style={{ color: "#007bff" }}>
+                      {" "}
+                      → {(originalDesign.metadata.originalWidthMm * scale / 100).toFixed(1)}mm ×{" "}
+                      {(originalDesign.metadata.originalHeightMm * scale / 100).toFixed(1)}mm
+                    </span>
+                  )}
                 </p>
               </div>
+
+              {validationResults.length > 0 && (
+                <div
+                  style={{
+                    marginBottom: "20px",
+                    padding: "10px",
+                    background: validationResults.some(v => !v.canProceed) ? "#fff3cd" : "#d4edda",
+                    border: `1px solid ${validationResults.some(v => !v.canProceed) ? "#ffc107" : "#28a745"}`,
+                    borderRadius: "4px",
+                    fontSize: "11px",
+                  }}
+                >
+                  <strong style={{ display: "block", marginBottom: "8px" }}>Validation:</strong>
+                  {validationResults.map((result, i) => (
+                    <div key={i} style={{ marginBottom: "4px" }}>
+                      {result.level === "safe" && "✅"}
+                      {result.level === "warning" && "⚠️"}
+                      {result.level === "danger" && "⚠️"}
+                      {result.level === "critical" && "❌"}
+                      {" "}{result.message}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div
                 style={{
@@ -128,10 +212,10 @@ function App() {
                 }}
               >
                 <strong>Machine Profile:</strong>
-                <p style={{ margin: "5px 0" }}>{design.machineProfile.name}</p>
+                <p style={{ margin: "5px 0" }}>{scaledDesign.machineProfile.name}</p>
                 <p style={{ margin: "5px 0", fontSize: "11px", color: "#666" }}>
-                  Max Hoop: {design.machineProfile.maxHoopWidthMm}mm ×{" "}
-                  {design.machineProfile.maxHoopHeightMm}mm
+                  Max Hoop: {scaledDesign.machineProfile.maxHoopWidthMm}mm ×{" "}
+                  {scaledDesign.machineProfile.maxHoopHeightMm}mm
                 </p>
               </div>
             </>
@@ -139,22 +223,23 @@ function App() {
 
           <div style={{ marginTop: "30px", fontSize: "11px", color: "#999" }}>
             <p>
-              <strong>Status:</strong> Phase 1 Foundation Complete
+              <strong>Status:</strong> Phase 2 In Progress
             </p>
             <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
               <li>✅ File parsers (PES/DST)</li>
               <li>✅ SimpleSkale engine</li>
               <li>✅ Canvas renderer</li>
+              <li>✅ Real-time scaling</li>
+              <li>✅ Validation display</li>
               <li>⏭️ File upload (next)</li>
-              <li>⏭️ Real-time scaling (next)</li>
             </ul>
           </div>
         </aside>
 
         {/* Canvas Area */}
         <section>
-          {design ? (
-            <StitchCanvas design={design} width={800} height={600} showJumps={false} showGrid={true} />
+          {scaledDesign ? (
+            <StitchCanvas design={scaledDesign} width={800} height={600} showJumps={false} showGrid={true} />
           ) : (
             <div
               style={{
