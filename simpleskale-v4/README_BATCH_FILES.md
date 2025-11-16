@@ -1,21 +1,42 @@
-# 📦 Batch Files - Super Easy Installation
+# 📦 Batch Files - Super Easy Installation (Self-Healing Edition)
 
-**Version:** 1.2.0
+**Version:** 2.0.0 (Self-Healing)
 **Last Updated:** 2025-11-16
 
 These batch files make it easy to install and run SimpleSkale on Windows without using command line.
+
+## 🎉 What's New in Version 2.0?
+
+**Automatic Error Detection and Fixing!**
+
+- ✅ **No manual troubleshooting** - Scripts fix problems automatically
+- ✅ **User-friendly messages** - Clear progress indicators
+- ✅ **Self-healing** - Detects and repairs common issues on the fly
+- ✅ **Optional GUI** - Double-click `SimpleSkale.vbs` for a friendly interface
+- ✅ **Smart installation** - Prevents errors before they happen
+
+**You no longer need to:**
+- ❌ Manually run fix scripts when errors occur
+- ❌ Understand technical error messages
+- ❌ Follow complex troubleshooting guides
+
+**Just run `install.bat`, restart, then run `run.bat` - Done!**
 
 ---
 
 ## 📁 Files
 
-### `install.bat` - One-Click Installation
-**Purpose:** Installs all prerequisites automatically
+### `install.bat` - One-Click Installation (Self-Healing)
+**Version:** 2.0.0
+**Purpose:** Installs all prerequisites and prevents common errors
 
 **What it does:**
 - Checks if running as Administrator
 - Runs the PowerShell setup script (`setup-windows.ps1`)
-- Installs: Rust, Visual Studio Build Tools, Node.js, WebView2, npm packages
+- Installs: Rust, Visual Studio Build Tools, Node.js, WebView2
+- **NEW:** Cleans npm cache to prevent corrupted packages
+- **NEW:** Uses smart installation strategy to prevent native binding errors
+- **NEW:** Verifies Tauri bindings are installed correctly
 - Takes 20-40 minutes
 - Prompts you to restart when done
 
@@ -23,26 +44,57 @@ These batch files make it easy to install and run SimpleSkale on Windows without
 1. Right-click `install.bat`
 2. Select "Run as Administrator"
 3. Click "Yes" when prompted
-4. Wait for installation
+4. Wait for installation (with progress messages)
 5. Restart computer when prompted
+
+**What's new:** Automatically prevents the "Cannot find native binding" error!
 
 ---
 
-### `run.bat` - Start SimpleSkale
-**Purpose:** Starts the SimpleSkale application
+### `run.bat` - Start SimpleSkale (Self-Healing)
+**Version:** 2.0.0
+**Purpose:** Starts SimpleSkale with automatic error detection and fixing
 
 **What it does:**
-- Checks if Node.js and Rust are installed
-- Installs npm packages if needed
-- Runs `npm run tauri dev`
+- **NEW:** Checks prerequisites with friendly messages
+- **NEW:** Verifies Tauri native bindings BEFORE starting
+- **NEW:** Auto-detects the "Cannot find native binding" error
+- **NEW:** Automatically fixes errors without user intervention
+- **NEW:** Shows clear progress through 4 steps
+- Runs `npm run tauri dev` with error monitoring
 - Opens SimpleSkale window
 
 **How to use:**
 1. Double-click `run.bat`
-2. Wait 2-5 minutes for first-time compilation
-3. SimpleSkale window opens!
+2. Watch the progress messages (4 steps)
+3. If any issues are detected, they're fixed automatically
+4. Wait 2-5 minutes for first-time compilation
+5. SimpleSkale window opens!
+
+**What's new:** Fixes problems automatically - no manual intervention needed!
 
 **Note:** Only works AFTER running `install.bat` and restarting computer.
+
+---
+
+### `SimpleSkale.vbs` - GUI Launcher (NEW!)
+**Version:** 1.0.0
+**Purpose:** User-friendly GUI launcher with helpful messages
+
+**What it does:**
+- Shows friendly popup messages explaining what's happening
+- Runs `run.bat` in the background
+- Provides guidance during startup
+- Perfect for non-technical users
+
+**How to use:**
+1. Double-click `SimpleSkale.vbs`
+2. Read the friendly popup messages
+3. Click OK to proceed
+4. The console window opens and runs automatically
+5. SimpleSkale window opens when ready!
+
+**Why use this:** Great for users who prefer a friendlier interface!
 
 ---
 
@@ -226,24 +278,53 @@ See WINDOWS_SETUP.md for step-by-step manual installation.
 
 ## 🎯 Summary
 
+### Main Files (Use These!)
+
 | File | Purpose | When to use | Time |
 |------|---------|-------------|------|
-| `install.bat` | Install prerequisites | First time only | 20-40 min |
-| `run.bat` | Start SimpleSkale | Every time you want to use it | 2-5 min (first run) |
-| `fix-tauri-binding.bat` | Basic fix for binding error | Simple "Cannot find native binding" errors | 2-5 min |
-| `fix-tauri-native-advanced.bat` | **Advanced fix (recommended)** | Persistent binding errors, after basic fix fails | 5-10 min |
-| `diagnose-tauri.bat` | Diagnose installation issues | Before/after fixes, when asking for help | 1 min |
+| `install.bat` | **Install prerequisites (self-healing)** | First time only | 20-40 min |
+| `run.bat` | **Start SimpleSkale (self-healing)** | Every time you want to use it | 2-5 min (first run) |
+| `SimpleSkale.vbs` | **GUI launcher (friendly interface)** | Alternative to run.bat for non-technical users | Instant |
 
-**Easy as 1-2-3:**
-1. Run install.bat (once)
-2. Restart computer (once)
-3. Run run.bat (every time)
+### Advanced/Troubleshooting Files (Usually Not Needed!)
 
-**If you get errors:**
-- "Cannot find native binding" (first time) → Run `fix-tauri-native-advanced.bat` (recommended)
-- "Cannot find native binding" (simple case) → Run `fix-tauri-binding.bat`
-- Want to diagnose the problem → Run `diagnose-tauri.bat`
-- Need detailed help → See `TAURI_NATIVE_BINDING_GUIDE.md`
-- Other errors → Check `ERROR_FIXES.md`
+| File | Purpose | When to use | Time |
+|------|---------|-------------|------|
+| `fix-tauri-binding.bat` | Basic manual fix | **Rarely needed** - run.bat fixes this automatically | 2-5 min |
+| `fix-tauri-native-advanced.bat` | Advanced manual fix | **Rarely needed** - only if auto-fix fails | 5-10 min |
+| `diagnose-tauri.bat` | Diagnostic tool | When asking for support or debugging | 1 min |
 
-🎉 Enjoy SimpleSkale!
+---
+
+## 🚀 Ultra-Simple Guide
+
+**For most users:**
+
+1. **Right-click** `install.bat` → **Run as Administrator** (once)
+2. **Restart** your computer (once)
+3. **Double-click** `run.bat` or `SimpleSkale.vbs` (every time)
+
+**That's it!** No manual fixes needed.
+
+---
+
+## ❓ What If I Get Errors?
+
+**You probably won't!** But if you do:
+
+1. **Try running again** - run.bat fixes most issues automatically
+2. **Check you restarted** - After install.bat, you MUST restart
+3. **Still broken?** See `ERROR_FIXES.md` or `TAURI_NATIVE_BINDING_GUIDE.md`
+
+**The fix scripts are there "just in case," but you shouldn't need them!**
+
+---
+
+## 🎉 Enjoy SimpleSkale!
+
+**Version 2.0 is all about simplicity:**
+- ✅ Automatic error detection
+- ✅ Automatic error fixing
+- ✅ Clear progress messages
+- ✅ Optional friendly GUI
+- ✅ No technical knowledge needed!
