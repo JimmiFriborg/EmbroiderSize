@@ -4,6 +4,84 @@ This is a quick reference guide for common errors when running `npm run tauri de
 
 ---
 
+## 🔴 Error: `Cannot find native binding`
+
+**Full Error Message:**
+```
+Error: Cannot find native binding.
+npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828).
+Please try npm i again after removing both package-lock.json and node_modules directory.
+
+Cannot find module './cli.win32-x64-msvc.node'
+Cannot find module '@tauri-apps/cli-win32-x64-msvc'
+```
+
+### ✅ Quick Fix (Easiest):
+
+**Just run the fix script:**
+
+1. **Double-click:** `fix-tauri-binding.bat`
+2. **Wait 2-5 minutes** for it to complete
+3. **Run:** `run.bat`
+
+### ✅ Manual Fix:
+
+If the batch file doesn't work, do this manually:
+
+1. **Delete old files:**
+   ```powershell
+   # In the simpleskale-v4 directory
+   del package-lock.json
+   rmdir /S /Q node_modules
+   ```
+
+2. **Reinstall npm packages:**
+   ```powershell
+   npm install --force
+   ```
+
+3. **Try running again:**
+   ```powershell
+   npm run tauri dev
+   ```
+
+### 🟡 Node.js Version Warning
+
+If you also see this warning:
+```
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'vite@7.2.2',
+npm warn EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+npm warn EBADENGINE   current: { node: 'v20.17.0', npm: '10.8.2' }
+npm warn EBADENGINE }
+```
+
+**Solution: Update Node.js (Optional but Recommended)**
+
+1. **Download newer Node.js:**
+   - Go to: https://nodejs.org/
+   - Download **LTS version v22.x.x** (recommended)
+   - Or download **v20.19.0+**
+
+2. **Install the new version:**
+   - Run the installer
+   - Choose "Automatically install necessary tools"
+
+3. **Restart computer**
+
+4. **Verify version:**
+   ```powershell
+   node --version
+   # Should show: v22.x.x or v20.19.0+
+   ```
+
+5. **Run fix script again:**
+   - Double-click `fix-tauri-binding.bat`
+
+**Note:** The warning won't break the app, but updating Node.js ensures better compatibility.
+
+---
+
 ## 🔴 Error: `linker 'link.exe' not found`
 
 **Full Error Message:**
