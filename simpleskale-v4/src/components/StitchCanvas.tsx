@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { DesignDocument, ColorBlock, Stitch } from "../types";
+import { calculateDensityHeatmap, type HeatmapGrid } from "../utils/heatmap";
 
 interface StitchCanvasProps {
   design: DesignDocument | null;
@@ -13,6 +14,7 @@ interface StitchCanvasProps {
   height?: number;
   showJumps?: boolean;
   showGrid?: boolean;
+  showHeatmap?: boolean;
 }
 
 /**
@@ -24,10 +26,22 @@ export function StitchCanvas({
   height = 600,
   showJumps = false,
   showGrid = true,
+  showHeatmap = false,
 }: StitchCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [zoom, setZoom] = useState(1.0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [heatmap, setHeatmap] = useState<HeatmapGrid | null>(null);
+
+  // Calculate heatmap when design changes
+  useEffect(() => {
+    if (!design) {
+      setHeatmap(null);
+      return;
+    }
+    const hm = calculateDensityHeatmap(design, 5);
+    setHeatmap(hm);
+  }, [design]);
 
   useEffect(() => {
     if (!canvasRef.current || !design) return;
@@ -62,6 +76,11 @@ export function StitchCanvas({
     const offsetX = (width - bounds.width * scale) / 2 - bounds.minX * scale + pan.x;
     const offsetY = (height - bounds.height * scale) / 2 - bounds.minY * scale + pan.y;
 
+    // Draw heatmap if enabled (before stitches)
+    if (showHeatmap && heatmap) {
+      drawHeatmap(ctx, heatmap, scale, offsetX, offsetY);
+    }
+
     // Draw each color block
     design.colorBlocks.forEach((block, index) => {
       const thread = design.threads[block.colorIndex % design.threads.length];
@@ -69,8 +88,8 @@ export function StitchCanvas({
     });
 
     // Draw design info overlay
-    drawInfoOverlay(ctx, design, bounds, scale);
-  }, [design, width, height, zoom, pan, showJumps, showGrid]);
+    drawInfoOverlay(ctx, design, bounds, scale, heatmap, showHeatmap);
+  }, [design, width, height, zoom, pan, showJumps, showGrid, showHeatmap, heatmap]);
 
   return (
     <div style={{ position: "relative" }}>
@@ -218,20 +237,54 @@ function drawColorBlock(
 }
 
 /**
+ * Draw density heatmap overlay
+ */
+function drawHeatmap(
+  ctx: CanvasRenderingContext2D,
+  heatmap: HeatmapGrid,
+  scale: number,
+  offsetX: number,
+  offsetY: number
+): void {
+  ctx.globalAlpha = 0.5; // Semi-transparent overlay
+
+  for (let row = 0; row < heatmap.rows; row++) {
+    for (let col = 0; col < heatmap.cols; col++) {
+      const cell = heatmap.cells[row][col];
+
+      if (cell.stitchCount === 0) continue; // Skip empty cells
+
+      const x = cell.x * scale + offsetX;
+      const y = cell.y * scale + offsetY;
+      const size = heatmap.gridSizeMm * scale;
+
+      ctx.fillStyle = cell.color;
+      ctx.fillRect(x, y, size, size);
+    }
+  }
+
+  ctx.globalAlpha = 1.0; // Reset transparency
+}
+
+/**
  * Draw info overlay
  */
 function drawInfoOverlay(
   ctx: CanvasRenderingContext2D,
   design: DesignDocument,
   bounds: { width: number; height: number },
-  scale: number
+  scale: number,
+  heatmap: HeatmapGrid | null,
+  showHeatmap: boolean
 ): void {
   const widthMm = bounds.width / 10;
   const heightMm = bounds.height / 10;
   const totalStitches = design.colorBlocks.reduce((sum, block) => sum + block.stitches.length, 0);
 
+  const infoHeight = showHeatmap && heatmap ? 130 : 90;
+
   ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-  ctx.fillRect(10, 10, 250, 90);
+  ctx.fillRect(10, 10, 250, infoHeight);
 
   ctx.fillStyle = "#ffffff";
   ctx.font = "12px monospace";
@@ -239,4 +292,10 @@ function drawInfoOverlay(
   ctx.fillText(`Size: ${widthMm.toFixed(1)}mm × ${heightMm.toFixed(1)}mm`, 20, 50);
   ctx.fillText(`Stitches: ${totalStitches.toLocaleString()}`, 20, 70);
   ctx.fillText(`Colors: ${design.threads.length}`, 20, 90);
+
+  // Show heatmap stats if enabled
+  if (showHeatmap && heatmap) {
+    ctx.fillText(`Avg Density: ${heatmap.avgDensity.toFixed(2)} st/mm²`, 20, 110);
+    ctx.fillText(`Max Density: ${heatmap.maxDensity.toFixed(2)} st/mm²`, 20, 130);
+  }
 }

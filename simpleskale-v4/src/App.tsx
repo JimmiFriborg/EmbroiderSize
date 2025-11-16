@@ -21,6 +21,9 @@ function App() {
   const [scale, setScale] = useState<number>(100);
   const [validationResults, setValidationResults] = useState<ValidationResult[]>([]);
   const [isScaling, setIsScaling] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showGrid, setShowGrid] = useState(true);
+  const [showSplitView, setShowSplitView] = useState(false);
 
   // Demo: Create a simple test design
   const createTestDesign = () => {
@@ -186,23 +189,17 @@ function App() {
 
       <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "20px" }}>
         {/* Control Panel */}
-        <aside style={{ padding: "20px", background: "#f5f5f5", borderRadius: "8px" }}>
-          <h2 style={{ fontSize: "18px", marginBottom: "20px" }}>Controls</h2>
+        <aside className="control-panel">
+          <h2 style={{ fontSize: "18px", marginBottom: "20px", color: "#2d3748" }}>Controls</h2>
 
           <div style={{ marginBottom: "20px" }}>
             <button
               onClick={handleFileUpload}
+              className="btn-success"
               style={{
                 width: "100%",
-                padding: "12px",
-                background: "#28a745",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "bold",
                 marginBottom: "10px",
+                fontSize: "14px",
               }}
             >
               📁 Open PES/DST File
@@ -210,31 +207,22 @@ function App() {
             <button
               onClick={handleFileExport}
               disabled={!scaledDesign}
+              className="btn-primary"
               style={{
                 width: "100%",
-                padding: "12px",
-                background: scaledDesign ? "#007bff" : "#cccccc",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: scaledDesign ? "pointer" : "not-allowed",
-                fontSize: "14px",
-                fontWeight: "bold",
                 marginBottom: "10px",
+                fontSize: "14px",
+                opacity: scaledDesign ? 1 : 0.5,
+                cursor: scaledDesign ? "pointer" : "not-allowed",
               }}
             >
               💾 Export Scaled File
             </button>
             <button
               onClick={createTestDesign}
+              className="btn-secondary"
               style={{
                 width: "100%",
-                padding: "10px",
-                background: "#6c757d",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
                 fontSize: "13px",
               }}
             >
@@ -244,8 +232,8 @@ function App() {
 
           {originalDesign && scaledDesign && (
             <>
-              <div style={{ marginBottom: "20px" }}>
-                <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "bold" }}>
+              <div className="slider-container">
+                <label style={{ display: "block", marginBottom: "12px", fontSize: "14px", fontWeight: "bold", color: "#2d3748" }}>
                   Scale: {scale}% {isScaling && "⏳"}
                 </label>
                 <input
@@ -254,13 +242,64 @@ function App() {
                   max="200"
                   value={scale}
                   onChange={(e) => setScale(Number(e.target.value))}
-                  style={{ width: "100%" }}
                 />
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "#999", marginTop: "4px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "#718096", marginTop: "8px" }}>
                   <span>20%</span>
                   <span>100%</span>
                   <span>200%</span>
                 </div>
+              </div>
+
+              <div style={{ marginBottom: "20px", padding: "10px", background: "#f9f9f9", borderRadius: "4px" }}>
+                <h3 style={{ fontSize: "13px", marginBottom: "10px", fontWeight: "bold" }}>View Options</h3>
+                <label style={{ display: "flex", alignItems: "center", marginBottom: "8px", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={showSplitView}
+                    onChange={(e) => setShowSplitView(e.target.checked)}
+                    style={{ marginRight: "8px" }}
+                  />
+                  <span style={{ fontSize: "12px" }}>Before/After Split View</span>
+                </label>
+                <label style={{ display: "flex", alignItems: "center", marginBottom: "8px", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={showHeatmap}
+                    onChange={(e) => setShowHeatmap(e.target.checked)}
+                    style={{ marginRight: "8px" }}
+                  />
+                  <span style={{ fontSize: "12px" }}>Show Density Heatmap</span>
+                </label>
+                <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={showGrid}
+                    onChange={(e) => setShowGrid(e.target.checked)}
+                    style={{ marginRight: "8px" }}
+                  />
+                  <span style={{ fontSize: "12px" }}>Show Grid</span>
+                </label>
+                {showHeatmap && (
+                  <div style={{ marginTop: "10px", padding: "8px", background: "#fff", borderRadius: "4px", fontSize: "10px" }}>
+                    <strong>Heatmap Legend:</strong>
+                    <div style={{ display: "flex", alignItems: "center", marginTop: "4px" }}>
+                      <span style={{ width: "12px", height: "12px", background: "#00ff00", display: "inline-block", marginRight: "4px" }}></span>
+                      <span>Safe (&lt;5 st/mm²)</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", marginTop: "2px" }}>
+                      <span style={{ width: "12px", height: "12px", background: "#ffff00", display: "inline-block", marginRight: "4px" }}></span>
+                      <span>Warning (5-10)</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", marginTop: "2px" }}>
+                      <span style={{ width: "12px", height: "12px", background: "#ff8800", display: "inline-block", marginRight: "4px" }}></span>
+                      <span>Caution (10-15)</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", marginTop: "2px" }}>
+                      <span style={{ width: "12px", height: "12px", background: "#ff0000", display: "inline-block", marginRight: "4px" }}></span>
+                      <span>Danger (&gt;15)</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div style={{ fontSize: "12px", color: "#666", marginBottom: "20px" }}>
@@ -332,36 +371,75 @@ function App() {
 
           <div style={{ marginTop: "30px", fontSize: "11px", color: "#999" }}>
             <p>
-              <strong>Status:</strong> Phase 2 Complete! 🎉
+              <strong>Status:</strong> Phase 3 In Progress... 🚀
             </p>
-            <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
-              <li>✅ File parsers (PES/DST)</li>
-              <li>✅ SimpleSkale engine</li>
-              <li>✅ Canvas renderer</li>
-              <li>✅ Real-time scaling</li>
-              <li>✅ Validation display</li>
-              <li>✅ File upload</li>
-              <li>✅ File export</li>
+            <ul style={{ marginTop: "10px", paddingLeft: "20px", lineHeight: "1.6" }}>
+              <li><strong>Phase 2 Complete:</strong></li>
+              <li style={{ marginLeft: "10px" }}>✅ File upload & export</li>
+              <li style={{ marginLeft: "10px" }}>✅ Real-time scaling</li>
+              <li><strong>Phase 3:</strong></li>
+              <li style={{ marginLeft: "10px" }}>✅ Density heatmap</li>
+              <li style={{ marginLeft: "10px" }}>✅ Before/After split view</li>
+              <li style={{ marginLeft: "10px" }}>⏭️ Enhanced styling</li>
             </ul>
           </div>
         </aside>
 
         {/* Canvas Area */}
-        <section>
+        <section className="canvas-container">
           {scaledDesign ? (
-            <StitchCanvas design={scaledDesign} width={800} height={600} showJumps={false} showGrid={true} />
+            showSplitView && originalDesign && scale !== 100 ? (
+              <div style={{ display: "flex", gap: "20px", flexDirection: "column" }}>
+                <div>
+                  <h3 style={{ marginBottom: "10px", fontSize: "14px", fontWeight: "bold", color: "#2d3748" }}>
+                    Before (Original)
+                  </h3>
+                  <StitchCanvas
+                    design={originalDesign}
+                    width={800}
+                    height={400}
+                    showJumps={false}
+                    showGrid={showGrid}
+                    showHeatmap={showHeatmap}
+                  />
+                </div>
+                <div>
+                  <h3 style={{ marginBottom: "10px", fontSize: "14px", fontWeight: "bold", color: "#2d3748" }}>
+                    After (Scaled {scale}%)
+                  </h3>
+                  <StitchCanvas
+                    design={scaledDesign}
+                    width={800}
+                    height={400}
+                    showJumps={false}
+                    showGrid={showGrid}
+                    showHeatmap={showHeatmap}
+                  />
+                </div>
+              </div>
+            ) : (
+              <StitchCanvas
+                design={scaledDesign}
+                width={800}
+                height={600}
+                showJumps={false}
+                showGrid={showGrid}
+                showHeatmap={showHeatmap}
+              />
+            )
           ) : (
             <div
               style={{
                 width: "800px",
                 height: "600px",
-                border: "2px dashed #ccc",
-                borderRadius: "8px",
+                border: "2px dashed #cbd5e0",
+                borderRadius: "12px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#999",
+                color: "#a0aec0",
                 fontSize: "18px",
+                fontWeight: "500",
               }}
             >
               Click "Load Test Pattern" to begin
