@@ -1,11 +1,11 @@
 # SimpleSkale 4.0 - Automated Windows Setup Script
-# Version: 1.2.0
+# Version: 1.2.1
 # Last Updated: 2025-11-16
 # This script will install all prerequisites for SimpleSkale 4.0
 
 Write-Host '========================================' -ForegroundColor Cyan
 Write-Host 'SimpleSkale 4.0 - Windows Setup' -ForegroundColor Cyan
-Write-Host 'Version 1.2.0 (Fixed Syntax)' -ForegroundColor Cyan
+Write-Host 'Version 1.2.1 (ASCII-Safe)' -ForegroundColor Cyan
 Write-Host '========================================' -ForegroundColor Cyan
 Write-Host ''
 
@@ -24,7 +24,7 @@ if (-not $isAdmin) {
     exit 1
 }
 
-Write-Host '✓ Running as Administrator' -ForegroundColor Green
+Write-Host '[OK] Running as Administrator' -ForegroundColor Green
 Write-Host ''
 
 # Function to check if a command exists
@@ -48,15 +48,15 @@ if (-not $chocoExists) {
 
     $chocoExists = Test-CommandExists 'choco'
     if ($chocoExists) {
-        Write-Host '  ✓ Chocolatey installed successfully' -ForegroundColor Green
+        Write-Host '  [OK] Chocolatey installed successfully' -ForegroundColor Green
     }
     else {
-        Write-Host '  ✗ Failed to install Chocolatey' -ForegroundColor Red
+        Write-Host '  [X] Failed to install Chocolatey' -ForegroundColor Red
         exit 1
     }
 }
 else {
-    Write-Host '  ✓ Chocolatey already installed' -ForegroundColor Green
+    Write-Host '  [OK] Chocolatey already installed' -ForegroundColor Green
 }
 Write-Host ''
 
@@ -74,16 +74,16 @@ if (-not $nodeExists) {
 
     $nodeExists = Test-CommandExists 'node'
     if ($nodeExists) {
-        Write-Host '  ✓ Node.js installed successfully' -ForegroundColor Green
+        Write-Host '  [OK] Node.js installed successfully' -ForegroundColor Green
     }
     else {
-        Write-Host '  ✗ Failed to install Node.js' -ForegroundColor Red
+        Write-Host '  [X] Failed to install Node.js' -ForegroundColor Red
         exit 1
     }
 }
 else {
     $nodeVersion = node --version
-    Write-Host "  ✓ Node.js already installed ($nodeVersion)" -ForegroundColor Green
+    Write-Host "  [OK] Node.js already installed ($nodeVersion)" -ForegroundColor Green
 }
 Write-Host ''
 
@@ -114,16 +114,16 @@ if (-not $cargoExists) {
 
     $cargoExists = Test-CommandExists 'cargo'
     if ($cargoExists) {
-        Write-Host '  ✓ Rust installed successfully' -ForegroundColor Green
+        Write-Host '  [OK] Rust installed successfully' -ForegroundColor Green
     }
     else {
-        Write-Host '  ✗ Failed to install Rust' -ForegroundColor Red
+        Write-Host '  [X] Failed to install Rust' -ForegroundColor Red
         Write-Host '  You may need to close and reopen PowerShell' -ForegroundColor Yellow
     }
 }
 else {
     $rustVersion = rustc --version
-    Write-Host "  ✓ Rust already installed ($rustVersion)" -ForegroundColor Green
+    Write-Host "  [OK] Rust already installed ($rustVersion)" -ForegroundColor Green
 }
 Write-Host ''
 
@@ -136,7 +136,7 @@ if (Test-Path $vsWhere) {
     $vsInstalls = & $vsWhere -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
     if ($vsInstalls) {
         $buildToolsInstalled = $true
-        Write-Host '  ✓ Visual Studio Build Tools already installed' -ForegroundColor Green
+        Write-Host '  [OK] Visual Studio Build Tools already installed' -ForegroundColor Green
     }
 }
 
@@ -167,7 +167,7 @@ if (-not $buildToolsInstalled) {
 
     Start-Process -FilePath $vsPath -ArgumentList $installArgs -Wait -NoNewWindow
 
-    Write-Host '  ✓ Visual Studio Build Tools installation completed' -ForegroundColor Green
+    Write-Host '  [OK] Visual Studio Build Tools installation completed' -ForegroundColor Green
 }
 else {
     Write-Host '  (Skipping - already installed)' -ForegroundColor Gray
@@ -180,10 +180,10 @@ $webview2Path = Join-Path ${env:ProgramFiles(x86)} 'Microsoft\EdgeWebView\Applic
 if (-not (Test-Path $webview2Path)) {
     Write-Host '  Installing WebView2 Runtime...' -ForegroundColor Yellow
     choco install webview2-runtime -y
-    Write-Host '  ✓ WebView2 installed successfully' -ForegroundColor Green
+    Write-Host '  [OK] WebView2 installed successfully' -ForegroundColor Green
 }
 else {
-    Write-Host '  ✓ WebView2 already installed' -ForegroundColor Green
+    Write-Host '  [OK] WebView2 already installed' -ForegroundColor Green
 }
 Write-Host ''
 
@@ -193,10 +193,10 @@ $currentDir = Get-Location
 $packageJsonPath = Join-Path $currentDir 'package.json'
 if (Test-Path $packageJsonPath) {
     npm install
-    Write-Host '  ✓ npm dependencies installed' -ForegroundColor Green
+    Write-Host '  [OK] npm dependencies installed' -ForegroundColor Green
 }
 else {
-    Write-Host '  ✗ package.json not found in current directory' -ForegroundColor Red
+    Write-Host '  [X] package.json not found in current directory' -ForegroundColor Red
     Write-Host '  Make sure you are in the simpleskale-v4 directory' -ForegroundColor Yellow
 }
 Write-Host ''
@@ -208,12 +208,12 @@ Write-Host '========================================' -ForegroundColor Cyan
 Write-Host ''
 
 Write-Host 'Prerequisites installed:' -ForegroundColor Green
-Write-Host '  ✓ Chocolatey package manager' -ForegroundColor Green
-Write-Host '  ✓ Node.js' -ForegroundColor Green
-Write-Host '  ✓ Rust (rustc + cargo)' -ForegroundColor Green
-Write-Host '  ✓ Visual Studio Build Tools with C++' -ForegroundColor Green
-Write-Host '  ✓ WebView2 Runtime' -ForegroundColor Green
-Write-Host '  ✓ npm dependencies' -ForegroundColor Green
+Write-Host '  [OK] Chocolatey package manager' -ForegroundColor Green
+Write-Host '  [OK] Node.js' -ForegroundColor Green
+Write-Host '  [OK] Rust (rustc + cargo)' -ForegroundColor Green
+Write-Host '  [OK] Visual Studio Build Tools with C++' -ForegroundColor Green
+Write-Host '  [OK] WebView2 Runtime' -ForegroundColor Green
+Write-Host '  [OK] npm dependencies' -ForegroundColor Green
 Write-Host ''
 
 Write-Host '========================================' -ForegroundColor Yellow
