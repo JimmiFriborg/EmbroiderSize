@@ -1,6 +1,6 @@
 # 📦 Batch Files - Super Easy Installation
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Last Updated:** 2025-11-16
 
 These batch files make it easy to install and run SimpleSkale on Windows without using command line.
@@ -46,6 +46,29 @@ These batch files make it easy to install and run SimpleSkale on Windows without
 
 ---
 
+### `fix-tauri-binding.bat` - Fix Tauri Binding Error
+**Purpose:** Fixes the "Cannot find native binding" error
+
+**What it does:**
+- Deletes `package-lock.json`
+- Deletes `node_modules` folder
+- Reinstalls npm dependencies with `--force` flag
+- Verifies Tauri native bindings are installed
+
+**When to use:**
+- When `run.bat` shows: "Error: Cannot find native binding"
+- When you see: "Cannot find module './cli.win32-x64-msvc.node'"
+- After updating Node.js version
+
+**How to use:**
+1. Double-click `fix-tauri-binding.bat`
+2. Wait 2-5 minutes for npm reinstall
+3. Double-click `run.bat` to try again
+
+**Note:** This is a common npm bug with optional dependencies. The fix script handles it automatically.
+
+---
+
 ## 🚀 Quick Start
 
 **First time setup:**
@@ -82,6 +105,13 @@ These batch files make it easy to install and run SimpleSkale on Windows without
 ### "Failed to start SimpleSkale"
 - Did you restart after running install.bat?
 - Check ERROR_FIXES.md for specific errors
+
+### "Cannot find native binding" or "Cannot find module './cli.win32-x64-msvc.node'"
+- This is a common npm bug with optional dependencies
+- **Quick fix:** Double-click `fix-tauri-binding.bat`
+- Wait 2-5 minutes for it to complete
+- Then run `run.bat` again
+- See ERROR_FIXES.md for more details
 
 ### Installation is taking too long
 - Visual Studio Build Tools is ~6GB download
@@ -138,10 +168,15 @@ See WINDOWS_SETUP.md for step-by-step manual installation.
 |------|---------|-------------|
 | `install.bat` | Install prerequisites | First time only |
 | `run.bat` | Start SimpleSkale | Every time you want to use it |
+| `fix-tauri-binding.bat` | Fix npm binding error | When you get "Cannot find native binding" error |
 
 **Easy as 1-2-3:**
 1. Run install.bat (once)
 2. Restart computer (once)
 3. Run run.bat (every time)
+
+**If you get errors:**
+- "Cannot find native binding" → Run fix-tauri-binding.bat
+- Other errors → Check ERROR_FIXES.md
 
 🎉 Enjoy SimpleSkale!
