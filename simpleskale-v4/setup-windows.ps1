@@ -1,11 +1,11 @@
 # SimpleSkale 4.0 - Automated Windows Setup Script
-# Version: 1.2.1
+# Version: 1.2.2
 # Last Updated: 2025-11-16
 # This script will install all prerequisites for SimpleSkale 4.0
 
 Write-Host '========================================' -ForegroundColor Cyan
 Write-Host 'SimpleSkale 4.0 - Windows Setup' -ForegroundColor Cyan
-Write-Host 'Version 1.2.1 (ASCII-Safe)' -ForegroundColor Cyan
+Write-Host 'Version 1.2.2 (Fixed npm install path)' -ForegroundColor Cyan
 Write-Host '========================================' -ForegroundColor Cyan
 Write-Host ''
 
@@ -189,15 +189,17 @@ Write-Host ''
 
 # 6. Install npm dependencies
 Write-Host 'Step 6: Installing npm dependencies...' -ForegroundColor Cyan
-$currentDir = Get-Location
-$packageJsonPath = Join-Path $currentDir 'package.json'
+$scriptDir = $PSScriptRoot
+$packageJsonPath = Join-Path $scriptDir 'package.json'
 if (Test-Path $packageJsonPath) {
+    Push-Location $scriptDir
     npm install
+    Pop-Location
     Write-Host '  [OK] npm dependencies installed' -ForegroundColor Green
 }
 else {
-    Write-Host '  [X] package.json not found in current directory' -ForegroundColor Red
-    Write-Host '  Make sure you are in the simpleskale-v4 directory' -ForegroundColor Yellow
+    Write-Host '  [X] package.json not found in script directory' -ForegroundColor Red
+    Write-Host "  Looking in: $scriptDir" -ForegroundColor Yellow
 }
 Write-Host ''
 
