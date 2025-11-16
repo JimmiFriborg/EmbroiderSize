@@ -2,6 +2,39 @@
 
 This guide will help you launch and test the SimpleSkale 4.0 demo application.
 
+## ⚡ FASTEST METHOD: Automated Setup (Windows)
+
+**If you're on Windows, use the automated setup script to install everything:**
+
+1. **Open PowerShell as Administrator**
+   - Press Windows key, type "PowerShell"
+   - Right-click "Windows PowerShell" → "Run as Administrator"
+
+2. **Navigate to simpleskale-v4 directory**
+   ```powershell
+   cd C:\Users\YourUsername\Documents\GitHub\EmbroiderSize\simpleskale-v4
+   ```
+
+3. **Run the automated setup script**
+   ```powershell
+   .\setup-windows.ps1
+   ```
+
+4. **Wait for installation (20-40 minutes)**
+   - Installs: Rust, Visual Studio Build Tools, Node.js, WebView2, npm packages
+   - Everything is automatic
+
+5. **Restart your computer when prompted**
+
+6. **After restart, run SimpleSkale**
+   ```powershell
+   npm run tauri dev
+   ```
+
+**Done!** 🎉 The automated script handles all prerequisites.
+
+---
+
 ## 🚨 Getting Errors? Start Here!
 
 **If `npm run tauri dev` is giving you errors:**
@@ -9,17 +42,17 @@ This guide will help you launch and test the SimpleSkale 4.0 demo application.
 👉 **See [ERROR_FIXES.md](ERROR_FIXES.md) for immediate solutions!**
 
 Common errors:
-- ❌ `linker 'link.exe' not found` → Install Visual Studio C++ Build Tools
-- ❌ `cargo: command not found` → Install Rust
+- ❌ `linker 'link.exe' not found` → Run automated setup script OR see [FIX_LINKER_ERROR.md](FIX_LINKER_ERROR.md)
+- ❌ `cargo: command not found` → Run automated setup script OR install Rust manually
 - ❌ `@tauri-apps/plugin-* could not be resolved` → Run `npm install`
 
-## 🪟 Windows Users - Important!
+## 🪟 Windows Manual Setup (If Automated Script Fails)
 
-**Windows requires additional setup:**
+**If the automated script doesn't work, install manually:**
 
-👉 **See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for complete Windows setup instructions!**
+👉 **See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for step-by-step manual setup!**
 
-Quick checklist:
+Manual checklist:
 1. Install Rust from https://rustup.rs/
 2. Install Visual Studio C++ Build Tools
 3. **Close and reopen PowerShell** after installing Rust
