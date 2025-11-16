@@ -2,6 +2,59 @@
 
 This guide will help you launch and test the SimpleSkale 4.0 demo application.
 
+## ⚡ FASTEST METHOD: Double-Click Batch Files (Windows)
+
+**Easiest way - just double-click two files:**
+
+### Step 1: Install Prerequisites
+
+1. **Navigate to the simpleskale-v4 folder**
+   - Example: `C:\Users\YourName\Documents\GitHub\EmbroiderSize\simpleskale-v4`
+
+2. **Right-click `install.bat`** → **"Run as Administrator"**
+   - Click "Yes" when asked for permission
+   - Wait 20-40 minutes (auto-installs everything)
+   - You'll see progress messages in the window
+
+3. **Restart your computer** when prompted
+
+### Step 2: Run SimpleSkale
+
+1. **Double-click `run.bat`**
+   - First time takes 2-5 minutes to compile
+   - A window will open when ready!
+
+**That's it!** 🎉 No command line needed!
+
+---
+
+## 🔧 Alternative: PowerShell Method
+
+If batch files don't work or you prefer PowerShell:
+
+1. **Open PowerShell as Administrator**
+   - Press Windows key, type "PowerShell"
+   - Right-click "Windows PowerShell" → "Run as Administrator"
+
+2. **Navigate to simpleskale-v4**
+   ```powershell
+   cd C:\Users\YourName\Documents\GitHub\EmbroiderSize\simpleskale-v4
+   ```
+
+3. **Run setup script**
+   ```powershell
+   .\setup-windows.ps1
+   ```
+
+4. **Restart when prompted**
+
+5. **Run SimpleSkale**
+   ```powershell
+   npm run tauri dev
+   ```
+
+---
+
 ## 🚨 Getting Errors? Start Here!
 
 **If `npm run tauri dev` is giving you errors:**
@@ -9,17 +62,17 @@ This guide will help you launch and test the SimpleSkale 4.0 demo application.
 👉 **See [ERROR_FIXES.md](ERROR_FIXES.md) for immediate solutions!**
 
 Common errors:
-- ❌ `linker 'link.exe' not found` → Install Visual Studio C++ Build Tools
-- ❌ `cargo: command not found` → Install Rust
+- ❌ `linker 'link.exe' not found` → Run automated setup script OR see [FIX_LINKER_ERROR.md](FIX_LINKER_ERROR.md)
+- ❌ `cargo: command not found` → Run automated setup script OR install Rust manually
 - ❌ `@tauri-apps/plugin-* could not be resolved` → Run `npm install`
 
-## 🪟 Windows Users - Important!
+## 🪟 Windows Manual Setup (If Automated Script Fails)
 
-**Windows requires additional setup:**
+**If the automated script doesn't work, install manually:**
 
-👉 **See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for complete Windows setup instructions!**
+👉 **See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for step-by-step manual setup!**
 
-Quick checklist:
+Manual checklist:
 1. Install Rust from https://rustup.rs/
 2. Install Visual Studio C++ Build Tools
 3. **Close and reopen PowerShell** after installing Rust
