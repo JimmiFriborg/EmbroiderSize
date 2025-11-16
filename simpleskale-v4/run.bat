@@ -1,9 +1,12 @@
 @echo off
 REM SimpleSkale 4.0 - Run Application
+REM Version: 1.1.0
+REM Last Updated: 2025-11-16
 REM This starts the SimpleSkale development server
 
 echo ========================================
 echo SimpleSkale 4.0 - Starting Application
+echo Version 1.1.0
 echo ========================================
 echo.
 

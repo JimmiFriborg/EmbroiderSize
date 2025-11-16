@@ -1,8 +1,11 @@
 # SimpleSkale 4.0 - Automated Windows Setup Script
+# Version: 1.1.0
+# Last Updated: 2025-11-16
 # This script will install all prerequisites for SimpleSkale 4.0
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "SimpleSkale 4.0 - Windows Setup" -ForegroundColor Cyan
+Write-Host "Version 1.1.0" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

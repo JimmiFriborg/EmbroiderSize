@@ -1,5 +1,8 @@
 # 📦 Batch Files - Super Easy Installation
 
+**Version:** 1.1.0
+**Last Updated:** 2025-11-16
+
 These batch files make it easy to install and run SimpleSkale on Windows without using command line.
 
 ---
@@ -64,6 +67,10 @@ These batch files make it easy to install and run SimpleSkale on Windows without
 ---
 
 ## ❓ Troubleshooting
+
+### "Still getting PowerShell errors"
+- You may be running an old version - see `UPDATE.md` for how to get the latest version
+- Check that install.bat displays "Version 1.1.0" when you run it
 
 ### "This script must run as Administrator"
 - Right-click `install.bat` → "Run as Administrator" (don't just double-click)
