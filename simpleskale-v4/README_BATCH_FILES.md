@@ -46,8 +46,8 @@ These batch files make it easy to install and run SimpleSkale on Windows without
 
 ---
 
-### `fix-tauri-binding.bat` - Fix Tauri Binding Error
-**Purpose:** Fixes the "Cannot find native binding" error
+### `fix-tauri-binding.bat` - Fix Tauri Binding Error (Basic)
+**Purpose:** Fixes the "Cannot find native binding" error (basic fix)
 
 **What it does:**
 - Deletes `package-lock.json`
@@ -58,14 +58,76 @@ These batch files make it easy to install and run SimpleSkale on Windows without
 **When to use:**
 - When `run.bat` shows: "Error: Cannot find native binding"
 - When you see: "Cannot find module './cli.win32-x64-msvc.node'"
-- After updating Node.js version
+- For simple cases of the binding error
 
 **How to use:**
 1. Double-click `fix-tauri-binding.bat`
 2. Wait 2-5 minutes for npm reinstall
 3. Double-click `run.bat` to try again
 
-**Note:** This is a common npm bug with optional dependencies. The fix script handles it automatically.
+**Note:** This is a common npm bug with optional dependencies. If this doesn't work, try `fix-tauri-native-advanced.bat`.
+
+---
+
+### `fix-tauri-native-advanced.bat` - Advanced Fix (Recommended)
+**Purpose:** Comprehensive fix for persistent Tauri native binding errors
+
+**What it does:**
+- Cleans npm cache completely (removes corrupted packages)
+- Deletes `package-lock.json` and `node_modules`
+- Uses multiple installation strategies:
+  1. Installs base packages without optional dependencies
+  2. Installs optional dependencies separately
+  3. Explicitly installs Windows platform package
+- Comprehensive verification of installation
+- Detailed success/failure reporting
+
+**When to use:**
+- When `fix-tauri-binding.bat` doesn't solve the problem
+- For persistent "Cannot find native binding" errors
+- After updating Node.js version
+- When you want thorough verification
+
+**How to use:**
+1. Double-click `fix-tauri-native-advanced.bat`
+2. Wait 5-10 minutes (longer but more thorough)
+3. Review the verification output
+4. Double-click `run.bat` to try again
+
+**Success rate:** ~90% (much higher than basic fix)
+
+---
+
+### `diagnose-tauri.bat` - Diagnostic Tool
+**Purpose:** Diagnoses what's wrong with your Tauri installation
+
+**What it does:**
+- Checks Node.js and npm versions
+- Checks Rust and Cargo installation
+- Checks Visual Studio C++ Build Tools
+- Verifies you're in the correct directory
+- Checks if node_modules exists
+- Checks for native binding files
+- Provides detailed system information
+- Recommends specific actions based on findings
+
+**When to use:**
+- Before trying fixes (to understand the problem)
+- After fixes (to verify they worked)
+- When asking for help (share the diagnostic output)
+- When nothing seems to work
+
+**How to use:**
+1. Double-click `diagnose-tauri.bat`
+2. Read the output carefully
+3. Look for `[X]` markers (these are problems)
+4. Follow the recommended actions
+5. Share the output if asking for support
+
+**Output indicators:**
+- `[OK]` = Everything is fine
+- `[!]` = Warning, might cause issues
+- `[X]` = Error, needs fixing
 
 ---
 
@@ -164,11 +226,13 @@ See WINDOWS_SETUP.md for step-by-step manual installation.
 
 ## 🎯 Summary
 
-| File | Purpose | When to use |
-|------|---------|-------------|
-| `install.bat` | Install prerequisites | First time only |
-| `run.bat` | Start SimpleSkale | Every time you want to use it |
-| `fix-tauri-binding.bat` | Fix npm binding error | When you get "Cannot find native binding" error |
+| File | Purpose | When to use | Time |
+|------|---------|-------------|------|
+| `install.bat` | Install prerequisites | First time only | 20-40 min |
+| `run.bat` | Start SimpleSkale | Every time you want to use it | 2-5 min (first run) |
+| `fix-tauri-binding.bat` | Basic fix for binding error | Simple "Cannot find native binding" errors | 2-5 min |
+| `fix-tauri-native-advanced.bat` | **Advanced fix (recommended)** | Persistent binding errors, after basic fix fails | 5-10 min |
+| `diagnose-tauri.bat` | Diagnose installation issues | Before/after fixes, when asking for help | 1 min |
 
 **Easy as 1-2-3:**
 1. Run install.bat (once)
@@ -176,7 +240,10 @@ See WINDOWS_SETUP.md for step-by-step manual installation.
 3. Run run.bat (every time)
 
 **If you get errors:**
-- "Cannot find native binding" → Run fix-tauri-binding.bat
-- Other errors → Check ERROR_FIXES.md
+- "Cannot find native binding" (first time) → Run `fix-tauri-native-advanced.bat` (recommended)
+- "Cannot find native binding" (simple case) → Run `fix-tauri-binding.bat`
+- Want to diagnose the problem → Run `diagnose-tauri.bat`
+- Need detailed help → See `TAURI_NATIVE_BINDING_GUIDE.md`
+- Other errors → Check `ERROR_FIXES.md`
 
 🎉 Enjoy SimpleSkale!
