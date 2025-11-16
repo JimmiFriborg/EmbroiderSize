@@ -1,12 +1,12 @@
 @echo off
 REM SimpleSkale 4.0 - Installation Batch File
-REM Version: 1.1.0
+REM Version: 1.2.0
 REM Last Updated: 2025-11-16
 REM This will run the PowerShell setup script with Administrator privileges
 
 echo ========================================
 echo SimpleSkale 4.0 - Automated Installation
-echo Version 1.1.0
+echo Version 1.2.0 (Fixed PowerShell Syntax)
 echo ========================================
 echo.
 echo This will install all prerequisites:
