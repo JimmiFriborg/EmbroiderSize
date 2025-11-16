@@ -57,7 +57,9 @@ if (-not (Test-Command node)) {
     choco install nodejs-lts -y
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $machinePath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $userPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = $machinePath + ';' + $userPath
 
     if (Test-Command node) {
         Write-Host "  ✓ Node.js installed successfully" -ForegroundColor Green
@@ -77,20 +79,23 @@ if (-not (Test-Command cargo)) {
     Write-Host "  Installing Rust..." -ForegroundColor Yellow
 
     # Download rustup-init.exe
-    $rustupUrl = "https://win.rustup.rs/x86_64"
-    $rustupPath = "$env:TEMP\rustup-init.exe"
+    $rustupUrl = 'https://win.rustup.rs/x86_64'
+    $rustupPath = Join-Path $env:TEMP 'rustup-init.exe'
 
     Write-Host "  Downloading Rust installer..." -ForegroundColor Yellow
     Invoke-WebRequest -Uri $rustupUrl -OutFile $rustupPath
 
     Write-Host "  Running Rust installer (this may take 5-10 minutes)..." -ForegroundColor Yellow
-    Start-Process -FilePath $rustupPath -ArgumentList "-y" -Wait -NoNewWindow
+    Start-Process -FilePath $rustupPath -ArgumentList '-y' -Wait -NoNewWindow
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $machinePath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $userPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = $machinePath + ';' + $userPath
 
     # Add cargo to path for this session
-    $env:Path += ";$env:USERPROFILE\.cargo\bin"
+    $cargoPath = Join-Path $env:USERPROFILE '.cargo\bin'
+    $env:Path += ';' + $cargoPath
 
     if (Test-Command cargo) {
         Write-Host "  ✓ Rust installed successfully" -ForegroundColor Green
@@ -106,7 +111,7 @@ Write-Host ""
 
 # 4. Check/Install Visual Studio Build Tools
 Write-Host "Step 4: Checking Visual Studio Build Tools..." -ForegroundColor Cyan
-$vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+$vsWhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
 $buildToolsInstalled = $false
 
 if (Test-Path $vsWhere) {
@@ -123,8 +128,8 @@ if (-not $buildToolsInstalled) {
     Write-Host ""
 
     # Download vs_buildtools.exe
-    $vsUrl = "https://aka.ms/vs/17/release/vs_buildtools.exe"
-    $vsPath = "$env:TEMP\vs_buildtools.exe"
+    $vsUrl = 'https://aka.ms/vs/17/release/vs_buildtools.exe'
+    $vsPath = Join-Path $env:TEMP 'vs_buildtools.exe'
 
     Write-Host "  Downloading Visual Studio Build Tools installer..." -ForegroundColor Yellow
     Invoke-WebRequest -Uri $vsUrl -OutFile $vsPath
@@ -134,12 +139,12 @@ if (-not $buildToolsInstalled) {
 
     # Install with C++ workload
     $installArgs = @(
-        "--quiet",
-        "--wait",
-        "--norestart",
-        "--nocache",
-        "--add", "Microsoft.VisualStudio.Workload.VCTools",
-        "--includeRecommended"
+        '--quiet',
+        '--wait',
+        '--norestart',
+        '--nocache',
+        '--add', 'Microsoft.VisualStudio.Workload.VCTools',
+        '--includeRecommended'
     )
 
     Start-Process -FilePath $vsPath -ArgumentList $installArgs -Wait -NoNewWindow
@@ -152,7 +157,7 @@ Write-Host ""
 
 # 5. Install WebView2 (if not on Windows 11)
 Write-Host "Step 5: Checking WebView2..." -ForegroundColor Cyan
-$webview2Path = "${env:ProgramFiles(x86)}\Microsoft\EdgeWebView\Application"
+$webview2Path = Join-Path ${env:ProgramFiles(x86)} 'Microsoft\EdgeWebView\Application'
 if (-not (Test-Path $webview2Path)) {
     Write-Host "  Installing WebView2 Runtime..." -ForegroundColor Yellow
     choco install webview2-runtime -y
@@ -165,7 +170,8 @@ Write-Host ""
 # 6. Install npm dependencies
 Write-Host "Step 6: Installing npm dependencies..." -ForegroundColor Cyan
 $currentDir = Get-Location
-if (Test-Path "$currentDir\package.json") {
+$packageJsonPath = Join-Path $currentDir 'package.json'
+if (Test-Path $packageJsonPath) {
     npm install
     Write-Host "  ✓ npm dependencies installed" -ForegroundColor Green
 } else {
