@@ -2,15 +2,38 @@
 
 This guide will help you set up SimpleSkale 4.0 on Windows.
 
-## ⚠️ Current Issue: Cargo Not Found
+## 🚨 Common Errors & Quick Fixes
+
+### Error 1: "linker `link.exe` not found"
 
 If you're seeing this error:
 ```
-failed to run 'cargo metadata' command to get workspace directory:
-program not found
+error: linker `link.exe` not found
+note: the msvc targets depend on the msvc linker but `link.exe` was not found
+note: please ensure that Visual Studio 2017 or later, or Build Tools for Visual Studio
+were installed with the Visual C++ option.
 ```
 
-**This means Rust is not installed.** Follow the steps below to fix it.
+**Solution:**
+1. Install Visual Studio C++ Build Tools: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022
+2. During installation, select **"Desktop development with C++"**
+3. Restart your computer after installation
+4. Try `npm run tauri dev` again
+
+### Error 2: "cargo not found" / "@tauri-apps/plugin-* could not be resolved"
+
+If you're seeing either error:
+```
+failed to run 'cargo metadata' command: program not found
+```
+OR
+```
+@tauri-apps/plugin-dialog (imported by ...) could not be resolved
+```
+
+**Solutions:**
+1. **For Cargo:** Install Rust from https://rustup.rs/ (see Step 1 below)
+2. **For Tauri plugins:** Run `npm install` in the simpleskale-v4 directory
 
 ---
 

@@ -2,16 +2,27 @@
 
 This guide will help you launch and test the SimpleSkale 4.0 demo application.
 
-## 🪟 Windows Users - Start Here!
+## 🚨 Getting Errors? Start Here!
 
-**If you're on Windows and getting "cargo not found" error:**
+**If `npm run tauri dev` is giving you errors:**
+
+👉 **See [ERROR_FIXES.md](ERROR_FIXES.md) for immediate solutions!**
+
+Common errors:
+- ❌ `linker 'link.exe' not found` → Install Visual Studio C++ Build Tools
+- ❌ `cargo: command not found` → Install Rust
+- ❌ `@tauri-apps/plugin-* could not be resolved` → Run `npm install`
+
+## 🪟 Windows Users - Important!
+
+**Windows requires additional setup:**
 
 👉 **See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for complete Windows setup instructions!**
 
-Quick fix:
+Quick checklist:
 1. Install Rust from https://rustup.rs/
-2. Run `rustup-init.exe` and choose default installation
-3. **Close and reopen PowerShell** (required!)
+2. Install Visual Studio C++ Build Tools
+3. **Close and reopen PowerShell** after installing Rust
 4. Verify with `cargo --version`
 5. Then continue with this guide
 

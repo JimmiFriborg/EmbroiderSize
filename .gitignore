@@ -49,3 +49,7 @@ output/
 # Temporary files
 *.tmp
 .temp/
+
+# Node.js / npm
+node_modules/
+package-lock.json
