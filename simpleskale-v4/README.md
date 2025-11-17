@@ -3,6 +3,30 @@
 **EmbroiderSize 4.0 - "SimpleSkale"**
 A fast, safe, Brother PP1-friendly stitch scaling application built with Tauri + React + TypeScript.
 
+## 🚀 Quick Start (Self-Healing Installation)
+
+**SimpleSkale now fixes problems automatically!**
+
+### For First-Time Users
+
+1. **Right-click** `install.bat` → **Run as Administrator**
+2. **Wait** 20-40 minutes
+3. **Restart** your computer
+4. **Double-click** `run.bat` or `SimpleSkale.vbs`
+
+That's it! No manual troubleshooting needed.
+
+**What's different now:**
+- ✅ `install.bat` prevents common errors automatically
+- ✅ `run.bat` detects and fixes issues on its own
+- ✅ No need to run fix scripts manually
+- ✅ User-friendly progress messages
+- ✅ Optional GUI launcher (`SimpleSkale.vbs`)
+
+**For detailed setup:** See [QUICKSTART_SIMPLE.md](QUICKSTART_SIMPLE.md) or [QUICKSTART.md](QUICKSTART.md)
+
+---
+
 ## 🎯 Project Status
 
 **Current Phase:** Phase 3 - UI Polish ✅ **COMPLETE**

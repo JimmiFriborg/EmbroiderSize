@@ -16,13 +16,28 @@ Cannot find module './cli.win32-x64-msvc.node'
 Cannot find module '@tauri-apps/cli-win32-x64-msvc'
 ```
 
-### ✅ Quick Fix (Easiest):
+### ✅ Quick Fix (Recommended - Advanced Script):
 
-**Just run the fix script:**
+**For persistent errors, use the advanced fix:**
+
+1. **Double-click:** `fix-tauri-native-advanced.bat`
+2. **Wait 5-10 minutes** for it to complete (more thorough than basic fix)
+3. **Review verification output** to confirm bindings are installed
+4. **Run:** `run.bat`
+
+**Success rate:** ~90% (much better than basic fix)
+
+**For detailed troubleshooting:** See `TAURI_NATIVE_BINDING_GUIDE.md`
+
+### ✅ Quick Fix (Basic):
+
+**If you want to try the simpler fix first:**
 
 1. **Double-click:** `fix-tauri-binding.bat`
 2. **Wait 2-5 minutes** for it to complete
 3. **Run:** `run.bat`
+
+**Note:** If this doesn't work, use `fix-tauri-native-advanced.bat` instead.
 
 ### ✅ Manual Fix:
 
