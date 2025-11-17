@@ -1,12 +1,12 @@
 @echo off
 REM SimpleSkale 4.0 - Run Application (Self-Healing Edition)
-REM Version: 2.0.0
+REM Version: 2.0.1 (Fixed Silent Failures)
 REM Last Updated: 2025-11-16
 REM This starts the SimpleSkale development server with automatic error fixing
 
 echo ========================================
 echo SimpleSkale 4.0 - Starting Application
-echo Version 2.0.0 (Self-Healing)
+echo Version 2.0.1 (Self-Healing)
 echo ========================================
 echo.
 
@@ -23,11 +23,19 @@ echo.
 REM Check if Node.js is installed
 where node >nul 2>&1
 if %errorLevel% neq 0 (
-    echo [X] ERROR: Node.js is not installed!
+    echo ========================================
+    echo ERROR: Node.js is not installed!
+    echo ========================================
     echo.
     echo Please run install.bat first to install all prerequisites.
     echo.
-    pause
+    echo Make sure to:
+    echo 1. Right-click install.bat
+    echo 2. Select "Run as Administrator"
+    echo 3. Restart your computer after installation
+    echo.
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
 )
 echo [OK] Node.js is installed
@@ -36,11 +44,20 @@ node --version
 REM Check if Rust/Cargo is installed
 where cargo >nul 2>&1
 if %errorLevel% neq 0 (
-    echo [X] ERROR: Rust is not installed!
+    echo.
+    echo ========================================
+    echo ERROR: Rust is not installed!
+    echo ========================================
     echo.
     echo Please run install.bat first to install all prerequisites.
     echo.
-    pause
+    echo Make sure to:
+    echo 1. Right-click install.bat
+    echo 2. Select "Run as Administrator"
+    echo 3. Restart your computer after installation
+    echo.
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
 )
 echo [OK] Rust is installed
@@ -59,11 +76,46 @@ if not exist "node_modules\" (
     echo [!] node_modules not found, installing packages...
     echo This may take 2-5 minutes...
     echo.
-    call npm cache clean --force >nul 2>&1
+
+    echo Cleaning npm cache...
+    call npm cache clean --force
+    if %errorLevel% neq 0 (
+        echo [!] Warning: Cache clean had issues, continuing...
+    )
+
+    echo Installing base packages...
     call npm install --no-optional
+    if %errorLevel% neq 0 (
+        echo [!] Warning: Base install had issues
+    )
+
+    echo Installing optional dependencies...
     call npm install --force
+    if %errorLevel% neq 0 (
+        echo.
+        echo ========================================
+        echo ERROR: npm install failed
+        echo ========================================
+        echo.
+        echo This could mean:
+        echo 1. Network connection issues
+        echo 2. Corrupted npm cache
+        echo 3. Disk space issues
+        echo.
+        echo Try:
+        echo 1. Check your internet connection
+        echo 2. Run install.bat again
+        echo 3. Restart your computer
+        echo.
+        echo Press any key to exit...
+        pause >nul
+        exit /b 1
+    )
     echo.
+) else (
+    echo [OK] node_modules exists
 )
+echo.
 
 REM ========================================
 REM Step 3: Verify Tauri native bindings
@@ -87,18 +139,25 @@ if exist "node_modules\@tauri-apps\cli\cli.win32-x64-msvc.node" (
 if "%BINDING_OK%"=="0" (
     echo [!] Native bindings are missing - fixing automatically...
     echo.
-    echo This is a known npm bug - fixing it now (30-60 seconds)...
+    echo This is a known npm bug - fixing it now...
+    echo This will take 2-5 minutes...
     echo.
 
     REM Clean and reinstall to fix the binding issue
     echo Cleaning npm cache...
-    call npm cache clean --force >nul 2>&1
+    call npm cache clean --force
+    if %errorLevel% neq 0 (
+        echo [!] Warning: Cache clean had issues
+    )
 
     echo Removing old package files...
-    if exist "package-lock.json" del /F /Q package-lock.json >nul 2>&1
-    if exist "node_modules" rmdir /S /Q node_modules >nul 2>&1
+    if exist "package-lock.json" del /F /Q package-lock.json
+    if exist "node_modules" (
+        echo This will take 30-60 seconds...
+        rmdir /S /Q node_modules
+    )
 
-    echo Reinstalling packages (this will take 2-5 minutes)...
+    echo Reinstalling packages...
     echo.
     call npm install --no-optional
     call npm install --force
@@ -107,6 +166,28 @@ if "%BINDING_OK%"=="0" (
         echo.
         echo [!] Still having issues, trying alternative method...
         call npm install --legacy-peer-deps --force
+
+        if %errorLevel% neq 0 (
+            echo.
+            echo ========================================
+            echo ERROR: Could not fix native bindings
+            echo ========================================
+            echo.
+            echo The automatic fix failed.
+            echo.
+            echo Try:
+            echo 1. Update Node.js to v20.19.0+ or v22.12.0+
+            echo    Download: https://nodejs.org/
+            echo 2. Restart your computer
+            echo 3. Run install.bat again
+            echo 4. Then run this script again
+            echo.
+            echo For detailed help: TAURI_NATIVE_BINDING_GUIDE.md
+            echo.
+            echo Press any key to exit...
+            pause >nul
+            exit /b 1
+        )
     )
 
     echo.
@@ -149,9 +230,12 @@ if %errorLevel% neq 0 (
         echo.
 
         REM Apply the fix
-        call npm cache clean --force >nul 2>&1
-        if exist "package-lock.json" del /F /Q package-lock.json >nul 2>&1
-        if exist "node_modules" rmdir /S /Q node_modules >nul 2>&1
+        call npm cache clean --force
+        if exist "package-lock.json" del /F /Q package-lock.json
+        if exist "node_modules" (
+            echo Removing node_modules...
+            rmdir /S /Q node_modules
+        )
 
         echo Reinstalling packages with fix...
         call npm install --no-optional
@@ -184,7 +268,8 @@ if %errorLevel% neq 0 (
             echo.
             echo For detailed help, see: TAURI_NATIVE_BINDING_GUIDE.md
             echo.
-            pause
+            echo Press any key to exit...
+            pause >nul
             exit /b 1
         )
     ) else (
@@ -194,6 +279,7 @@ if %errorLevel% neq 0 (
         echo ERROR: Failed to start SimpleSkale
         echo ========================================
         echo.
+        echo Error details:
         type "%TEMP_ERROR%"
         echo.
         echo ----------------------------------------
@@ -207,16 +293,21 @@ if %errorLevel% neq 0 (
         echo - ERROR_FIXES.md (for common errors)
         echo - TAURI_NATIVE_BINDING_GUIDE.md (for binding errors)
         echo.
-        pause
+        echo Press any key to exit...
+        pause >nul
         exit /b 1
     )
 )
 
 REM Clean up temp file
-if exist "%TEMP_ERROR%" del "%TEMP_ERROR%" >nul 2>&1
+if exist "%TEMP_ERROR%" del "%TEMP_ERROR%"
 
 REM If we got here, SimpleSkale is running!
 echo.
+echo ========================================
 echo SimpleSkale is now running!
+echo ========================================
+echo.
 echo Keep this window open while using SimpleSkale.
 echo Close the window or press Ctrl+C to stop.
+echo.
