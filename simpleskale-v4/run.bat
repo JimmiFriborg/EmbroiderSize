@@ -1,12 +1,12 @@
 @echo off
 REM SimpleSkale 4.0 - Run Application (Self-Healing Edition)
-REM Version: 2.0.1 (Fixed Silent Failures)
+REM Version: 2.1.0 (Fixed Auto-Fix Verification)
 REM Last Updated: 2025-11-16
 REM This starts the SimpleSkale development server with automatic error fixing
 
 echo ========================================
 echo SimpleSkale 4.0 - Starting Application
-echo Version 2.0.1 (Self-Healing)
+echo Version 2.1.0 (Self-Healing)
 echo ========================================
 echo.
 
@@ -38,8 +38,44 @@ if %errorLevel% neq 0 (
     pause >nul
     exit /b 1
 )
-echo [OK] Node.js is installed
-node --version
+
+REM Check Node.js version for known problematic versions
+for /f "tokens=*" %%i in ('node --version') do set NODE_VERSION=%%i
+echo [OK] Node.js is installed: %NODE_VERSION%
+
+REM Warn about Node.js v20.17.0 and v20.18.0 (known npm bug)
+if "%NODE_VERSION%"=="v20.17.0" (
+    echo.
+    echo ========================================
+    echo WARNING: Problematic Node.js Version!
+    echo ========================================
+    echo.
+    echo You have Node.js v20.17.0, which has a known npm bug
+    echo that prevents Tauri native bindings from installing correctly.
+    echo.
+    echo RECOMMENDED: Update to Node.js v20.19.0+ or v22.12.0+
+    echo Download: https://nodejs.org/
+    echo.
+    echo Continuing anyway, but if you get errors, please update Node.js first.
+    echo.
+    pause
+)
+if "%NODE_VERSION%"=="v20.18.0" (
+    echo.
+    echo ========================================
+    echo WARNING: Problematic Node.js Version!
+    echo ========================================
+    echo.
+    echo You have Node.js v20.18.0, which has a known npm bug
+    echo that prevents Tauri native bindings from installing correctly.
+    echo.
+    echo RECOMMENDED: Update to Node.js v20.19.0+ or v22.12.0+
+    echo Download: https://nodejs.org/
+    echo.
+    echo Continuing anyway, but if you get errors, please update Node.js first.
+    echo.
+    pause
+)
 
 REM Check if Rust/Cargo is installed
 where cargo >nul 2>&1
@@ -137,9 +173,9 @@ if exist "node_modules\@tauri-apps\cli\cli.win32-x64-msvc.node" (
 )
 
 if "%BINDING_OK%"=="0" (
-    echo [!] Native bindings are missing - fixing automatically...
+    echo [!] Native bindings are missing - attempting automatic fix...
     echo.
-    echo This is a known npm bug - fixing it now...
+    echo This is a known npm bug - trying to fix it now...
     echo This will take 2-5 minutes...
     echo.
 
@@ -170,10 +206,10 @@ if "%BINDING_OK%"=="0" (
         if %errorLevel% neq 0 (
             echo.
             echo ========================================
-            echo ERROR: Could not fix native bindings
+            echo ERROR: Could not install packages
             echo ========================================
             echo.
-            echo The automatic fix failed.
+            echo npm install failed completely.
             echo.
             echo Try:
             echo 1. Update Node.js to v20.19.0+ or v22.12.0+
@@ -191,7 +227,47 @@ if "%BINDING_OK%"=="0" (
     )
 
     echo.
-    echo [OK] Fix complete!
+    echo Verifying the fix worked...
+
+    REM Check if bindings exist NOW
+    set "FIX_WORKED=0"
+    if exist "node_modules\@tauri-apps\cli\cli.win32-x64-msvc.node" (
+        echo [OK] Fix successful! Native bindings are now installed.
+        set "FIX_WORKED=1"
+    ) else (
+        if exist "node_modules\@tauri-apps\cli-win32-x64-msvc" (
+            echo [OK] Fix successful! Native bindings are now installed.
+            set "FIX_WORKED=1"
+        )
+    )
+
+    if "%FIX_WORKED%"=="0" (
+        echo.
+        echo ========================================
+        echo ERROR: Auto-fix failed
+        echo ========================================
+        echo.
+        echo The automatic fix didn't work. The native bindings are still missing.
+        echo.
+        echo This usually means your Node.js version has the npm bug.
+        echo.
+        echo SOLUTION:
+        echo 1. Update Node.js to v20.19.0+ or v22.12.0+
+        echo    Download: https://nodejs.org/
+        echo    (Your current version: %NODE_VERSION%)
+        echo.
+        echo 2. Restart your computer
+        echo.
+        echo 3. Run this script again
+        echo.
+        echo The bug is fixed in newer Node.js versions!
+        echo.
+        echo For more help: TAURI_NATIVE_BINDING_GUIDE.md
+        echo.
+        echo Press any key to exit...
+        pause >nul
+        exit /b 1
+    )
     echo.
 )
 
@@ -209,98 +285,34 @@ echo.
 echo ----------------------------------------
 echo.
 
-REM Create a temporary file to capture error output
-set "TEMP_ERROR=%TEMP%\simpleskale_error.txt"
+REM Run the Tauri dev server
+call npm run tauri dev
 
-REM Run the Tauri dev server and capture errors
-call npm run tauri dev 2>"%TEMP_ERROR%"
-
-REM If the command fails, check if it's the native binding error
+REM If the command fails
 if %errorLevel% neq 0 (
-    REM Check if it's the native binding error
-    findstr /C:"Cannot find native binding" "%TEMP_ERROR%" >nul
-    if %errorLevel% equ 0 (
-        echo.
-        echo ========================================
-        echo Auto-Fixing Native Binding Error
-        echo ========================================
-        echo.
-        echo Detected the native binding error - fixing automatically...
-        echo This will take 2-5 minutes...
-        echo.
-
-        REM Apply the fix
-        call npm cache clean --force
-        if exist "package-lock.json" del /F /Q package-lock.json
-        if exist "node_modules" (
-            echo Removing node_modules...
-            rmdir /S /Q node_modules
-        )
-
-        echo Reinstalling packages with fix...
-        call npm install --no-optional
-        call npm install --force
-
-        if %errorLevel% neq 0 (
-            call npm install --legacy-peer-deps --force
-        )
-
-        echo.
-        echo [OK] Fix applied! Restarting SimpleSkale...
-        echo.
-
-        REM Try running again
-        call npm run tauri dev
-
-        if %errorLevel% neq 0 (
-            echo.
-            echo ========================================
-            echo Still Having Issues
-            echo ========================================
-            echo.
-            echo The automatic fix didn't resolve the issue.
-            echo.
-            echo This might help:
-            echo 1. Update Node.js to v20.19.0 or v22.12.0+
-            echo    Download: https://nodejs.org/
-            echo 2. Restart your computer
-            echo 3. Run this script again
-            echo.
-            echo For detailed help, see: TAURI_NATIVE_BINDING_GUIDE.md
-            echo.
-            echo Press any key to exit...
-            pause >nul
-            exit /b 1
-        )
-    ) else (
-        REM Different error - show the error and suggest solutions
-        echo.
-        echo ========================================
-        echo ERROR: Failed to start SimpleSkale
-        echo ========================================
-        echo.
-        echo Error details:
-        type "%TEMP_ERROR%"
-        echo.
-        echo ----------------------------------------
-        echo.
-        echo Common issues:
-        echo 1. Did you run install.bat first?
-        echo 2. Did you restart your computer after install.bat?
-        echo 3. Is Visual Studio C++ Build Tools installed?
-        echo.
-        echo For solutions, check:
-        echo - ERROR_FIXES.md (for common errors)
-        echo - TAURI_NATIVE_BINDING_GUIDE.md (for binding errors)
-        echo.
-        echo Press any key to exit...
-        pause >nul
-        exit /b 1
-    )
+    echo.
+    echo ========================================
+    echo ERROR: Failed to start SimpleSkale
+    echo ========================================
+    echo.
+    echo Common issues:
+    echo 1. Did you run install.bat first?
+    echo 2. Did you restart your computer after install.bat?
+    echo 3. Is Visual Studio C++ Build Tools installed?
+    echo.
+    echo If you see "Cannot find native binding" error above:
+    echo - Your Node.js version (%NODE_VERSION%) has the npm bug
+    echo - Update to Node.js v20.19.0+ or v22.12.0+
+    echo - Download: https://nodejs.org/
+    echo.
+    echo For solutions, check:
+    echo - TAURI_NATIVE_BINDING_GUIDE.md (for binding errors)
+    echo - ERROR_FIXES.md (for other common errors)
+    echo.
+    echo Press any key to exit...
+    pause >nul
+    exit /b 1
 )
-
-REM Clean up temp file
-if exist "%TEMP_ERROR%" del "%TEMP_ERROR%"
 
 REM If we got here, SimpleSkale is running!
 echo.
